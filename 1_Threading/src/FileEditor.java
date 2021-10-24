@@ -1,7 +1,4 @@
-import java.io.File;  // Import the File class
-import java.io.FileNotFoundException;  // Import this class to handle errors
-import java.io.FileWriter;   // Import the FileWriter class
-import java.io.IOException;  // Import the IOException class to handle errors
+import java.io.*;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Scanner; // Import the Scanner class to read text files
@@ -12,19 +9,7 @@ public class FileEditor {
     public FileEditor() {}
 
     public File createFile(String fileTitle) {
-        try {
-            File file = new File(fileTitle);
-            if (file.createNewFile()) {
-                System.out.println("File created: " + file.getName());
-            } else {
-                System.out.println("File already exists.");
-            }
-            return file;
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        }
-        return null;
+        return new File(fileTitle);
     }
 
     public void writeFile(File file, String text) {
@@ -34,7 +19,6 @@ public class FileEditor {
             writer.write(text + "\n");
 
             writer.close();
-            System.out.println("Successfully wrote to the file.");
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
@@ -55,6 +39,25 @@ public class FileEditor {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
+    }
+
+    public String readLastLine (String fileName) {
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader("message_store.txt"));
+            String line = reader.readLine();
+            String lastLine = "";
+            while (line != null) {
+                lastLine = line;
+                // read next line
+                line = reader.readLine();
+            }
+            reader.close();
+            return lastLine;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     public Timestamp addTimestamp() {

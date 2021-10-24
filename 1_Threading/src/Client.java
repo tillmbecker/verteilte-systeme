@@ -4,10 +4,11 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.time.Instant;
 
 /**
  * This class implements java socket client
- * @author pankaj
+ * @author tillmbecker
  *
  */
 public class Client {
@@ -15,8 +16,10 @@ public class Client {
     private String host;
     private int port;
     private Socket socket;
+    ObjectOutputStream objectOutputStream;
+    ObjectInputStream objectInputStream;
 
-    public Client(String host, int port) throws IOException {
+    public Client(String host, int port) {
         this.host = host;
         this.port = port;
     }
@@ -24,48 +27,77 @@ public class Client {
     public void connect() throws IOException {
         // Connect to server
         this.socket = new Socket(host, port);
-    }
-
-    public void sendMessages() throws ClassNotFoundException, IOException {
-        ObjectOutputStream objectOutputStream;
-        ObjectInputStream objectInputStream;
-
         //write to socket using ObjectOutputStream
         objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         //read the server response message
         objectInputStream = new ObjectInputStream(socket.getInputStream());
+    }
 
-        String incomingMessage;
+    public void sendMessages() throws ClassNotFoundException, IOException {
+        Message incomingMessage;
+        Message outgoingMessage = new Message();
 
         for (int i=0; i<5;i++) {
 
             System.out.println("Client: Sending request to Socket Server");
+            // Outgoing message text
+            String messageText = "Some text " + i;
+            // Fill outgoingMessage with content
+            outgoingMessage.setReceiver("Server");
+            outgoingMessage.setSender("Client");
+            outgoingMessage.setTime(Instant.now());
+            outgoingMessage.setPayload(messageText);
 
-            Message messageSent = new Message("Some text " + i);
 
-            objectOutputStream.writeObject(messageSent);
+            objectOutputStream.writeObject(outgoingMessage);
             objectOutputStream.flush();
 
-            incomingMessage = (String) objectInputStream.readObject();
-            System.out.println("Client: Message Received: " + incomingMessage);
+            incomingMessage = (Message) objectInputStream.readObject();
+            System.out.println("Client - Message Received: " + incomingMessage.getPayload());
         }
 
-        Message exitMessage = new Message("exit");
-        objectOutputStream.writeObject(exitMessage);
-        objectOutputStream.flush();
+        requestLastMessage();
 
+        closeServer();
+
+//        ToDo: Die Streams schließen bringt das Programm zum Absturz, obwohl der Server schon geschlossen wurde
         //close resources
-        objectInputStream.close();
-        objectOutputStream.close();
+//        objectInputStream.close();
+//        objectOutputStream.close();
     }
 
-    public void requestLastMessage() throws IOException {
-        ObjectOutputStream objectOutputStream;
+    public void requestLastMessage() throws IOException, ClassNotFoundException {
+        Message outgoingMessage = new Message();
 
-        Message message = new Message("!/lastmessage/!");
-        objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-        objectOutputStream.writeObject(message);
+        // Outgoing message text
+        String messageText = "!/lastmessage/!";
+        // Fill outgoingMessage with content
+        outgoingMessage.setReceiver("Server");
+        outgoingMessage.setSender("Client");
+        outgoingMessage.setTime(Instant.now());
+        outgoingMessage.setPayload(messageText);
 
-        ObjectInputStream objectInputStream;
+        objectOutputStream.writeObject(outgoingMessage);
+        objectOutputStream.flush();
+
+        Message lastMessage = (Message) objectInputStream.readObject();
+
+        System.out.println("Client - Last message to server: "+ lastMessage.getPayload());
+    }
+
+    public void closeServer() throws IOException {
+
+        Message outgoingMessage = new Message();
+
+        // Outgoing message text
+        String messageText = "!/exit/!";
+        // Fill outgoingMessage with content
+        outgoingMessage.setReceiver("Server");
+        outgoingMessage.setSender("Client");
+        outgoingMessage.setTime(Instant.now());
+        outgoingMessage.setPayload(messageText);
+
+        objectOutputStream.writeObject(outgoingMessage);
+        objectOutputStream.flush();
     }
 }

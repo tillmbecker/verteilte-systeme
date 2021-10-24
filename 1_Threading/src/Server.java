@@ -5,16 +5,20 @@ import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.Instant;
 
 public class Server {
 
     private int port;
     private ServerSocket server;
     Socket socket;
+    Boolean connectionOpen;
+    ObjectOutputStream objectOutputStream;
+    ObjectInputStream objectInputStream;
 
     public Server(int port) {
         this.port = port;
-
+        connectionOpen = false;
     }
 
     public void connect() throws IOException {
@@ -22,39 +26,49 @@ public class Server {
         this.server = new ServerSocket(port);
         //creating socket and waiting for client connection
         this.socket = server.accept();
+        connectionOpen = true;
+
+        //read from socket to ObjectInputStream object
+        objectInputStream = new ObjectInputStream(socket.getInputStream());
+        //create ObjectOutputStream object
+        objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
     }
 
-    public void receiveMessages() throws IOException, ClassNotFoundException {
-        //read from socket to ObjectInputStream object
-        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-        //create ObjectOutputStream object
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-
-        Message message;
-
-        while (true) {
-            System.out.println("Server: Waiting for the client request");
+    public void receiveMessages() throws IOException, ClassNotFoundException{
+        Message incomingMessage;
+        Message outgoingMessage = new Message();
+        while (connectionOpen) {
+            System.out.println("Server: Waiting for client request");
 
             //convert ObjectInputStream object to Message
-            message = (Message) objectInputStream.readObject();
+            incomingMessage = (Message) objectInputStream.readObject();
+            String incomingMessagePayload = (String) incomingMessage.getPayload();
 
-            messageStore(message.getText() + " | " + message.getTimestamp());
+            System.out.println("Server - Message received: " + incomingMessagePayload);
 
-            System.out.println("Server: Message Received: " + message.getText());
+            // Outgoing message text
+            String messageText = "Message received: " + incomingMessagePayload;
+            // Fill outgoingMessage with content
+            outgoingMessage.setReceiver("Client");
+            outgoingMessage.setSender("Server");
+            outgoingMessage.setTime(Instant.now());
+            outgoingMessage.setPayload(messageText);
 
-            //write object to Socket
-            objectOutputStream.writeObject("Hi Client " + message.getText());
+            objectOutputStream.writeObject(outgoingMessage);
 
-            if(message.getText().contains("!/lastmessage/!")) sendLastMessage();
+            if(incomingMessagePayload.contains("!/lastmessage/!")) sendLastMessage();
 
             //terminate the server if client sends exit request
-            if(message.getText().contains(("exit"))) break;
+            if(incomingMessagePayload.contains(("!/exit/!"))) connectionOpen = false;
+
+            // Save message from client in message_store.txt
+            messageStore(incomingMessagePayload + " | " + incomingMessage.getTime());
         }
+        disconnect();
+
         //close resources
         objectInputStream.close();
         objectOutputStream.close();
-
-        disconnect();
     }
 
     public void disconnect() throws IOException {
@@ -70,7 +84,19 @@ public class Server {
         fileEditor.writeFile(messageFile, message);
     }
 
-    public void sendLastMessage() {
+    public void sendLastMessage() throws IOException {
+        FileEditor fileEditor = new FileEditor();
+        Message outgoingMessage = new Message();
 
+        // Outgoing message text
+        String messageText = fileEditor.readLastLine("message_store.txt");
+        // Fill outgoingMessage with content
+        outgoingMessage.setReceiver("Client");
+        outgoingMessage.setSender("Server");
+        outgoingMessage.setTime(Instant.now());
+        outgoingMessage.setPayload(messageText);
+
+        objectOutputStream.writeObject(outgoingMessage);
+        objectOutputStream.flush();
     }
 }
