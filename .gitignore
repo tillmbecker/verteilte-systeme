@@ -21,3 +21,13 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+.idea
+/message_store.txt
+/output.txt
+/zeichen.txt
+/1_Threading/Verteilte Systeme.iml
+/1_Threading/zeichen.txt
+/1_Threading/1_Threading.iml
+/1_Threading_Leon/
+/1_Threading/src_corrupt/
