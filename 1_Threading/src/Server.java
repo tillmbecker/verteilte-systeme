@@ -34,9 +34,9 @@ public class Server {
         objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
     }
 
-    public void receiveMessages() throws IOException, ClassNotFoundException{
+    public void receiveMessages() throws IOException, ClassNotFoundException {
         Message incomingMessage;
-        Message outgoingMessage = new Message();
+
         while (connectionOpen) {
             System.out.println("Server: Waiting for client request");
 
@@ -46,15 +46,7 @@ public class Server {
 
             System.out.println("Server - Message received: " + incomingMessagePayload);
 
-            // Outgoing message text
-            String messageText = "Message received: " + incomingMessagePayload;
-            // Fill outgoingMessage with content
-            outgoingMessage.setReceiver("Client");
-            outgoingMessage.setSender("Server");
-            outgoingMessage.setTime(Instant.now());
-            outgoingMessage.setPayload(messageText);
-
-            objectOutputStream.writeObject(outgoingMessage);
+            sendMessageConfirmation(incomingMessagePayload);
 
             if(incomingMessagePayload.contains("!/lastmessage/!")) sendLastMessage();
 
@@ -69,6 +61,20 @@ public class Server {
         //close resources
         objectInputStream.close();
         objectOutputStream.close();
+    }
+
+    public void sendMessageConfirmation (String text) throws IOException {
+        Message outgoingMessage = new Message();
+
+        // Outgoing message text
+        String messageText = "Message received: " + text;
+        // Fill outgoingMessage with content
+        outgoingMessage.setReceiver("Client");
+        outgoingMessage.setSender("Server");
+        outgoingMessage.setTime(Instant.now());
+        outgoingMessage.setPayload(messageText);
+
+        objectOutputStream.writeObject(outgoingMessage);
     }
 
     public void disconnect() throws IOException {
