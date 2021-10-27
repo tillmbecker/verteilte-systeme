@@ -8,7 +8,7 @@ public class FileEditor {
 
     public FileEditor() {}
 
-    public File createFile(String fileTitle) {
+        public File createFile(String fileTitle) {
         return new File(fileTitle);
     }
 
