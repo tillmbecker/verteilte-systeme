@@ -35,23 +35,23 @@ public class Client {
 
     public void sendMessages() throws ClassNotFoundException, IOException {
         Message incomingMessage;
-        Message outgoingMessage = new Message();
 
         for (int i=0; i<5;i++) {
 
             System.out.println("Client: Sending request to Socket Server");
             // Outgoing message text
-            String messageText = "Some text " + i;
+            String messageText = "" + i;
             // Fill outgoingMessage with content
+            Message outgoingMessage = new Message();
             outgoingMessage.setReceiver("Server");
             outgoingMessage.setSender("Client");
-            outgoingMessage.setTime(Instant.now());
             outgoingMessage.setPayload(messageText);
 
 
             objectOutputStream.writeObject(outgoingMessage);
             objectOutputStream.flush();
 
+            // Read incoming messages
             incomingMessage = (Message) objectInputStream.readObject();
             System.out.println("Client - Message Received: " + incomingMessage.getPayload());
         }
