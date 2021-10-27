@@ -3,13 +3,13 @@ import java.io.IOException;
 public class RunnableClassServer implements Runnable {
     Server server = new Server(9876);
 
-    public RunnableClassServer() throws IOException {
+    public RunnableClassServer() {
     }
 
     public void run() {
         try {
             server.connect();
-            server.receiveMessages();
+            server.delegateConnections();
         } catch (Exception e) {
             e.printStackTrace();
         }

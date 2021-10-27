@@ -1,9 +1,7 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.time.Instant;
 
 /**
@@ -18,10 +16,17 @@ public class Client {
     private Socket socket;
     ObjectOutputStream objectOutputStream;
     ObjectInputStream objectInputStream;
+    private String messageSender;
 
     public Client(String host, int port) {
         this.host = host;
         this.port = port;
+    }
+
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        Client client = new Client("localhost", 9876);
+        client.connect();
+        client.sendMessages();
     }
 
     public void connect() throws IOException {
@@ -31,6 +36,7 @@ public class Client {
         objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         //read the server response message
         objectInputStream = new ObjectInputStream(socket.getInputStream());
+        this.messageSender = "Client, " + socket.getLocalPort();
     }
 
     public void sendMessages() throws ClassNotFoundException, IOException {
@@ -38,13 +44,13 @@ public class Client {
 
         for (int i=0; i<5;i++) {
 
-            System.out.println("Client: Sending request to Socket Server");
+            System.out.println(messageSender + ": Sending request to Socket Server");
             // Outgoing message text
             String messageText = "" + i;
             // Fill outgoingMessage with content
             Message outgoingMessage = new Message();
             outgoingMessage.setReceiver("Server");
-            outgoingMessage.setSender("Client");
+            outgoingMessage.setSender(messageSender);
             outgoingMessage.setPayload(messageText);
 
 
@@ -53,7 +59,7 @@ public class Client {
 
             // Read incoming messages
             incomingMessage = (Message) objectInputStream.readObject();
-            System.out.println("Client - Message Received: " + incomingMessage.getPayload());
+            System.out.println(messageSender + " - Message Received: " + incomingMessage.getPayload());
         }
 
         requestLastMessage();
@@ -73,7 +79,7 @@ public class Client {
         String messageText = "!/lastmessage/!";
         // Fill outgoingMessage with content
         outgoingMessage.setReceiver("Server");
-        outgoingMessage.setSender("Client");
+        outgoingMessage.setSender(messageSender);
         outgoingMessage.setTime(Instant.now());
         outgoingMessage.setPayload(messageText);
 
@@ -82,7 +88,7 @@ public class Client {
 
         Message lastMessage = (Message) objectInputStream.readObject();
 
-        System.out.println("Client - Last message to server: "+ lastMessage.getPayload());
+        System.out.println(messageSender + " - Last message to server: "+ lastMessage.getPayload());
     }
 
     public void closeServer() throws IOException {
@@ -93,7 +99,7 @@ public class Client {
         String messageText = "!/exit/!";
         // Fill outgoingMessage with content
         outgoingMessage.setReceiver("Server");
-        outgoingMessage.setSender("Client");
+        outgoingMessage.setSender(messageSender);
         outgoingMessage.setTime(Instant.now());
         outgoingMessage.setPayload(messageText);
 
