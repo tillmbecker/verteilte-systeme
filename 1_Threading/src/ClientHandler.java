@@ -7,64 +7,85 @@ import java.time.Instant;
 
 public class ClientHandler extends Thread {
     final private Socket socket;
-    final private ObjectInputStream objectInputStream;
-    final private ObjectOutputStream objectOutputStream;
+    final private ObjectInputStream clientObjectInputStream;
+    final private ObjectOutputStream clientObjectOutputStream;
+    final private ObjectInputStream masterObjectInputStream;
+    final private ObjectOutputStream masterObjectOutputStream;
+
     private boolean connectionOpen;
     private String messageSender;
 
-    public ClientHandler(Socket socket, ObjectInputStream objectInputStream, ObjectOutputStream objectOutputStream) {
+    public ClientHandler(Socket socket, ObjectInputStream objectInputStream, ObjectOutputStream objectOutputStream, ObjectInputStream masterObjectInputStream, ObjectOutputStream masterObjectOutputStream) {
         this.socket = socket;
-        this.objectInputStream = objectInputStream;
-        this.objectOutputStream = objectOutputStream;
+        this.clientObjectInputStream = objectInputStream;
+        this.clientObjectOutputStream = objectOutputStream;
+        this.masterObjectInputStream = masterObjectInputStream;
+        this.masterObjectOutputStream = masterObjectOutputStream;
         connectionOpen = true;
-        messageSender = "Sever, " + socket.getLocalPort();
+        messageSender = "Slave, " + socket.getLocalPort();
     }
 
     @Override
     public void run() {
-
-        Message incomingMessage = null;
+        Message clientMessage;
+        Message masterMessage;
 
         while (connectionOpen) {
             System.out.println(messageSender + ": Waiting for client request");
 
-            //convert ObjectInputStream object to Message
             try {
-                incomingMessage = (Message) objectInputStream.readObject();
+                // Read messages from client and send to master
+                clientMessage = (Message) clientObjectInputStream.readObject();
+                masterObjectOutputStream.writeObject(clientMessage);
+                masterObjectOutputStream.flush();
+
+                // Read messages from master and send to client
+                masterMessage = (Message) masterObjectInputStream.readObject();
+                clientObjectOutputStream.writeObject(masterMessage);
+                clientObjectOutputStream.flush();
             } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            String incomingMessagePayload = (String) incomingMessage.getPayload();
-            if (incomingMessagePayload == null) incomingMessagePayload = "";
-
-            System.out.println(messageSender + " - Message received: " + incomingMessagePayload);
-
-            try {
-                sendMessageConfirmation(incomingMessagePayload);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            if(incomingMessagePayload.contains("!/lastmessage/!")) {
+                System.out.println(messageSender + ": Disconnecting " + socket);
                 try {
-                    sendLastMessage();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    socket.close();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
                 }
+
+                System.out.println(messageSender + ": Client disconnected.");
+                connectionOpen = false;
+                break;
             }
 
-            //terminate the server if client sends exit request
-            if(incomingMessagePayload.contains(("!/exit/!"))) connectionOpen = false;
-
-            // Save message from client in message_store.txt
-            messageStore(incomingMessagePayload + " | " + incomingMessage.getTime());
+//            String incomingMessagePayload = (String) incomingMessage.getPayload();
+//            if (incomingMessagePayload == null) incomingMessagePayload = "";
+//
+//            System.out.println(messageSender + " - Message received: " + incomingMessagePayload);
+//
+//            try {
+//                sendMessageConfirmation(incomingMessagePayload);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            if(incomingMessagePayload.contains("!/lastmessage/!")) {
+//                try {
+//                    sendLastMessage();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            //terminate the server if client sends exit request
+//            if(incomingMessagePayload.contains(("!/exit/!"))) connectionOpen = false;
+//
+//            // Save message from client in message_store.txt
+//            messageStore(incomingMessagePayload + " | " + incomingMessage.getTime());
         }
 
-        //close resources
+        // Close resources
         try {
-            objectInputStream.close();
-            objectOutputStream.close();
+            clientObjectInputStream.close();
+            clientObjectOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -81,7 +102,7 @@ public class ClientHandler extends Thread {
         outgoingMessage.setTime(Instant.now());
         outgoingMessage.setPayload(messageText);
 
-        objectOutputStream.writeObject(outgoingMessage);
+        clientObjectOutputStream.writeObject(outgoingMessage);
     }
 
     public void messageStore(String message) {
@@ -102,7 +123,7 @@ public class ClientHandler extends Thread {
         outgoingMessage.setTime(Instant.now());
         outgoingMessage.setPayload(messageText);
 
-        objectOutputStream.writeObject(outgoingMessage);
-        objectOutputStream.flush();
+        clientObjectOutputStream.writeObject(outgoingMessage);
+        clientObjectOutputStream.flush();
     }
 }

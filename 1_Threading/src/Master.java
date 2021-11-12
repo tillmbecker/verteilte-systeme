@@ -7,24 +7,24 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.Instant;
 
-public class Server {
+public class Master {
 
     private int port;
     Boolean connectionOpen;
     private ServerSocket server;
 
-    public Server(int port) {
+    public Master (int port) {
         this.port = port;
         connectionOpen = false;
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        Server server = new Server(9876);
-        server.connect();
-        server.delegateConnections();
+        Master master = new Master(9876);
+        master.start();
+        master.delegateConnections();
     }
 
-    public void connect() throws IOException {
+    public void start() throws IOException {
         // Create the socket server object
         this.server = new ServerSocket(port);
         // Open the connection
@@ -39,7 +39,7 @@ public class Server {
                 socket = server.accept();
 
                 // Confirm client connection
-                System.out.println("New Client connected: " + socket);
+                System.out.println("New Slave connected: " + socket);
 
                 // Create new object streams for the created socket
                 ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
