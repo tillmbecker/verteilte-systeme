@@ -6,8 +6,11 @@ import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Master {
+    Map<Integer, Socket> clients = new HashMap<Integer, Socket>();
 
     private int port;
     Boolean connectionOpen;

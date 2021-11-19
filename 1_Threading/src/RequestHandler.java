@@ -34,12 +34,20 @@ public class RequestHandler extends Thread {
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
+            String incomingMessageType = (String) incomingMessage.getType();
+
+//            switch (incomingMessageType) {
+//                case "connect":
+//                    // ToDo: Wie kriegen alle anderen Master Threads von der Node Liste mit?
+//                default:
+//            }
 
             String incomingMessagePayload = (String) incomingMessage.getPayload();
             if (incomingMessagePayload == null) incomingMessagePayload = "";
 
             System.out.println(messageSender + " - Message received: " + incomingMessagePayload);
 
+            // Send a message confirmation before message will be worked
             try {
                 sendMessageConfirmation(incomingMessagePayload);
             } catch (IOException e) {
@@ -55,7 +63,7 @@ public class RequestHandler extends Thread {
             }
 
             //terminate the server if client sends exit request
-            if(incomingMessagePayload.contains(("!/exit/!"))) connectionOpen = false;
+//            if(incomingMessagePayload.contains(("!/exit/!"))) connectionOpen = false;
 
             // Save message from client in message_store.txt
             messageStore(incomingMessagePayload + " | " + incomingMessage.getTime());
@@ -69,6 +77,7 @@ public class RequestHandler extends Thread {
             e.printStackTrace();
         }
     }
+
 
     public void sendMessageConfirmation (String text) throws IOException {
         Message outgoingMessage = new Message();

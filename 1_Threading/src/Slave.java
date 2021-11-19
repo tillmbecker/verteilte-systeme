@@ -46,7 +46,13 @@ public class Slave {
         masterObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         //read the server response message
         masterobjectInputStream = new ObjectInputStream(socket.getInputStream());
-//        this.messageSender = "Client, " + socket.getLocalPort();
+
+        Message connectMessage = new Message();
+        connectMessage.setType("connect");
+        connectMessage.setSender("Slave " + socket);
+        connectMessage.setReceiver("Master " + server);
+        connectMessage.setSequenceNo(1);
+        connectMessage.setPayload(socket.getPort());
     }
 
     public void delegateConnections() throws IOException {

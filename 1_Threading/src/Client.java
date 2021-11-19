@@ -3,6 +3,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class implements java socket client
@@ -23,8 +24,8 @@ public class Client {
         this.port = port;
     }
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
-        Client client = new Client("localhost", 9999);
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+        Client client = new Client("localhost", 9876);
         client.connect();
         client.sendMessages();
     }
@@ -39,7 +40,7 @@ public class Client {
         this.messageSender = "Client, " + socket.getLocalPort();
     }
 
-    public void sendMessages() throws ClassNotFoundException, IOException {
+    public void sendMessages() throws ClassNotFoundException, IOException, InterruptedException {
         Message incomingMessage;
 
         for (int i=0; i<5;i++) {
@@ -60,8 +61,10 @@ public class Client {
             System.out.println(messageSender + " - Message Received: " + incomingMessage.getPayload());
         }
 
-//        requestLastMessage();
-//        disconnect();
+//        TimeUnit.SECONDS.sleep(5);
+
+        requestLastMessage();
+        disconnect();
 //        closeServer();
 
 //        ToDo: Die Streams schließen bringt das Programm zum Absturz, obwohl der Server schon geschlossen wurde

@@ -31,7 +31,7 @@ public class ClientHandler extends Thread {
         Message masterMessage;
 
         while (connectionOpen) {
-            System.out.println(messageSender + ": Waiting for client request");
+//            System.out.println(messageSender + ": Waiting for client request");
 
             try {
                 // Read messages from client and send to master
@@ -44,6 +44,7 @@ public class ClientHandler extends Thread {
                 clientObjectOutputStream.writeObject(masterMessage);
                 clientObjectOutputStream.flush();
             } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
                 System.out.println(messageSender + ": Disconnecting " + socket);
                 try {
                     socket.close();
@@ -55,31 +56,6 @@ public class ClientHandler extends Thread {
                 connectionOpen = false;
                 break;
             }
-
-//            String incomingMessagePayload = (String) incomingMessage.getPayload();
-//            if (incomingMessagePayload == null) incomingMessagePayload = "";
-//
-//            System.out.println(messageSender + " - Message received: " + incomingMessagePayload);
-//
-//            try {
-//                sendMessageConfirmation(incomingMessagePayload);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//            if(incomingMessagePayload.contains("!/lastmessage/!")) {
-//                try {
-//                    sendLastMessage();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            //terminate the server if client sends exit request
-//            if(incomingMessagePayload.contains(("!/exit/!"))) connectionOpen = false;
-//
-//            // Save message from client in message_store.txt
-//            messageStore(incomingMessagePayload + " | " + incomingMessage.getTime());
         }
 
         // Close resources
@@ -89,41 +65,5 @@ public class ClientHandler extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void sendMessageConfirmation (String text) throws IOException {
-        Message outgoingMessage = new Message();
-
-        // Outgoing message text
-        String messageText = "Message received: " + text;
-        // Fill outgoingMessage with content
-        outgoingMessage.setReceiver("Client");
-        outgoingMessage.setSender(messageSender);
-        outgoingMessage.setTime(Instant.now());
-        outgoingMessage.setPayload(messageText);
-
-        clientObjectOutputStream.writeObject(outgoingMessage);
-    }
-
-    public void messageStore(String message) {
-        FileEditor fileEditor = new FileEditor();
-        File messageFile = fileEditor.createFile("message_store.txt");
-        fileEditor.writeFile(messageFile, message);
-    }
-
-    public void sendLastMessage() throws IOException {
-        FileEditor fileEditor = new FileEditor();
-        Message outgoingMessage = new Message();
-
-        // Outgoing message text
-        String messageText = fileEditor.readLastLine("message_store.txt");
-        // Fill outgoingMessage with content
-        outgoingMessage.setReceiver("Client");
-        outgoingMessage.setSender(messageSender);
-        outgoingMessage.setTime(Instant.now());
-        outgoingMessage.setPayload(messageText);
-
-        clientObjectOutputStream.writeObject(outgoingMessage);
-        clientObjectOutputStream.flush();
     }
 }
