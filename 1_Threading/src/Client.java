@@ -3,6 +3,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class implements java socket client
@@ -23,7 +24,7 @@ public class Client {
         this.port = port;
     }
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Client client = new Client("localhost", 9876);
         client.connect();
         client.sendMessages();
@@ -39,11 +40,10 @@ public class Client {
         this.messageSender = "Client, " + socket.getLocalPort();
     }
 
-    public void sendMessages() throws ClassNotFoundException, IOException {
+    public void sendMessages() throws ClassNotFoundException, IOException, InterruptedException {
         Message incomingMessage;
 
         for (int i=0; i<5;i++) {
-
             System.out.println(messageSender + ": Sending request to Socket Server");
             // Outgoing message text
             String messageText = "" + i;
@@ -53,7 +53,6 @@ public class Client {
             outgoingMessage.setSender(messageSender);
             outgoingMessage.setPayload(messageText);
 
-
             objectOutputStream.writeObject(outgoingMessage);
             objectOutputStream.flush();
 
@@ -62,14 +61,13 @@ public class Client {
             System.out.println(messageSender + " - Message Received: " + incomingMessage.getPayload());
         }
 
-        requestLastMessage();
+//        TimeUnit.SECONDS.sleep(5);
 
-        closeServer();
+        requestLastMessage();
+        disconnect();
+//        closeServer();
 
 //        ToDo: Die Streams schließen bringt das Programm zum Absturz, obwohl der Server schon geschlossen wurde
-        //close resources
-//        objectInputStream.close();
-//        objectOutputStream.close();
     }
 
     public void requestLastMessage() throws IOException, ClassNotFoundException {
@@ -105,5 +103,13 @@ public class Client {
 
         objectOutputStream.writeObject(outgoingMessage);
         objectOutputStream.flush();
+    }
+
+    public void disconnect() throws IOException {
+        //close resources
+//        objectOutputStream
+        objectInputStream.close();
+        objectOutputStream.close();
+        socket.close();
     }
 }

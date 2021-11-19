@@ -1,15 +1,13 @@
-import java.io.IOException;
-
 public class RunnableClassSlave implements Runnable {
-    Slave slave = new Slave(9006, "localhost", 9876);
-
-    public RunnableClassSlave() {
+private Slave slave;
+    public RunnableClassSlave(int slavePort) {
+        slave = new Slave(slavePort, "localhost", 9876);
     }
 
     public void run() {
         try {
-            slave.connect();
-            slave.connecttoMaster();
+            slave.start();
+            slave.connectToMaster();
             slave.delegateConnections();
         } catch (Exception e) {
             e.printStackTrace();

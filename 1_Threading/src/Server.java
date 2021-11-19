@@ -46,7 +46,7 @@ public class Server {
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 
                 // Create ClientHandler thread and start it
-                Thread thread = new ClientHandler(socket, objectInputStream, objectOutputStream);
+                Thread thread = new RequestHandler(socket, objectInputStream, objectOutputStream);
                 thread.start();
 
             } catch (Exception e){

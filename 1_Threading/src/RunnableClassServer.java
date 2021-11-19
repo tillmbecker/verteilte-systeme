@@ -15,3 +15,10 @@ public class RunnableClassServer implements Runnable {
         }
     }
 }
+
+// Socket Knoten mappen
+// Lokal im Prozess merken welche Sockets man kennt
+// Also follower nachricht an den Leader schicken -> "Ich bin ein Follower und das ist mein Port"
+// Leader merkt sich die Liste
+// Schickt eine aktuelle Liste mit accept an den Follower
+
