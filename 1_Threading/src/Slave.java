@@ -4,18 +4,27 @@ import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class Slave {
 
-    private int slavePort;
+    // Variable declaration for master
     private ServerSocket server;
     private int masterPort;
     private String masterHost;
-    private Socket socket;
-    Boolean clientConnectionOpen;
+    private ObjectOutputStream masterObjectOutputStream;
+    private ObjectInputStream masterObjectInputStream;
 
-    ObjectOutputStream masterObjectOutputStream;
-    ObjectInputStream masterObjectInputStream;
+    //  Variable declaration for slave
+    private int slavePort;
+    private Socket socket;
+    private String messageSender;
+
+    // Variable declaration for client
+    private Boolean clientConnectionOpen;
+    private ObjectInputStream clientObjectInputStream;
+    private ObjectOutputStream clientObjectOutputStream;
+
 
     public Slave(int slavePort, String masterHost, int masterPort) {
         this.slavePort = slavePort;
@@ -26,20 +35,15 @@ public class Slave {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Slave slave = new Slave(9999, "localhost", 9876);
-        //Slave slave2 = new Slave(9998, "localhost", 9877);
         slave.start();
-        //slave2.start();
         slave.connectToMaster();
-        //slave2.connectToMaster();
         slave.delegateConnections();
-        //slave2.delegateConnections();
     }
 
     public void start() throws IOException {
         // Create the socket server object
         this.server = new ServerSocket(slavePort);
         // Open the client connection
-        clientConnectionOpen = true;
     }
 
     public void connectToMaster() throws IOException {
@@ -49,49 +53,75 @@ public class Slave {
         masterObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         //read the server response message
         masterObjectInputStream = new ObjectInputStream(socket.getInputStream());
-//        this.messageSender = "Client, " + socket.getLocalPort();
+        messageSender = "Slave, " + socket.getLocalPort();
+
+        Message connectMessage = new Message();
+        connectMessage.setType("connect");
+        connectMessage.setSender("Slave " + socket);
+        connectMessage.setReceiver("Master " + server);
+        connectMessage.setSequenceNo(1);
+        connectMessage.setPayload(socket.getPort());
     }
 
     public void delegateConnections() throws IOException {
-        while (clientConnectionOpen) {
-            Socket socket = null;
+        Message clientMessage;
+        Message masterMessage;
 
+        Socket socket = null;
+
+        while (clientConnectionOpen == false) {
             try {
                 socket = server.accept();
 
+                clientObjectInputStream  = new ObjectInputStream(socket.getInputStream());
+                clientObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+
                 // Confirm client connection
                 System.out.println("New Client connected: " + socket);
-
-                // Create new object streams for the created socket
-                ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-
-                // Create ClientHandler thread and start it
-                Thread thread = new ClientHandler(socket, objectInputStream, objectOutputStream, masterObjectInputStream, masterObjectOutputStream);
-                thread.start();
-
-//                try {
-//                    Message clientMessage = (Message) objectInputStream.readObject();
-//                    masterObjectOutputStream.writeObject(clientMessage);
-//                    masterObjectOutputStream.flush();
-//                } catch (IOException | ClassNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                // ToDo: Die Streaminhalte können können nicht hin- und hergeschickt werden,
-//                //  da pro Schleifendurchlauf immer ein neuer Thread erstellt werden kann
-//                try {
-//                    Message masterMessage = (Message) objectInputStream.readObject();
-//                    masterObjectOutputStream.writeObject(masterMessage);
-//                    masterObjectOutputStream.flush();
-//                } catch (IOException | ClassNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-
+                clientConnectionOpen = true;
             } catch (Exception e){
                 socket.close();
                 e.printStackTrace();
             }
+        }
+
+        while (clientConnectionOpen) {
+            try {
+                // Read messages from client and send to master
+                clientMessage = (Message) clientObjectInputStream.readObject();
+                masterObjectOutputStream.writeObject(clientMessage);
+                masterObjectOutputStream.flush();
+
+                System.out.println(messageSender + " - Message received: " + clientMessage.getPayload());
+
+                // Read messages from master and send to client
+                masterMessage = (Message) masterObjectInputStream.readObject();
+                clientObjectOutputStream.writeObject(masterMessage);
+                clientObjectOutputStream.flush();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+                System.out.println(messageSender + ": Waiting for client message");
+//                break;
+            } catch (ClassNotFoundException e){
+                e.printStackTrace();
+            } catch (SocketException e) {
+                e.printStackTrace();
+                System.out.println(messageSender + ": Disconnecting " + socket);
+                try {
+                    socket.close();
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+                System.out.println(messageSender + ": Client disconnected.");
+
+            }
+        }
+        // Close resources
+        try {
+            clientObjectInputStream.close();
+            clientObjectOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

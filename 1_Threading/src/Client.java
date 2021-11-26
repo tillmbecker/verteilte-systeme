@@ -23,13 +23,12 @@ public class Client {
         this.port = port;
     }
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Client client = new Client("localhost", 9999);
-        //Client client2 = new Client("localhost", 9998);
         client.connect();
-        //client2.connect();
+//        TimeUnit.SECONDS.sleep(5);
+
         client.sendMessages();
-        //client2.sendMessages();
     }
 
     public void connect() throws IOException {
@@ -42,7 +41,7 @@ public class Client {
         this.messageSender = "Client, " + socket.getLocalPort();
     }
 
-    public void sendMessages() throws ClassNotFoundException, IOException {
+    public void sendMessages() throws ClassNotFoundException, IOException, InterruptedException {
         Message incomingMessage;
 
         for (int i=0; i<5;i++) {
@@ -63,8 +62,10 @@ public class Client {
             System.out.println(messageSender + " - Client: " + incomingMessage.getPayload());
         }
 
+        TimeUnit.SECONDS.sleep(5);
+
 //        requestLastMessage();
-//        disconnect();
+        disconnect();
 //        closeServer();
 
 //        ToDo: Die Streams schließen bringt das Programm zum Absturz, obwohl der Server schon geschlossen wurde

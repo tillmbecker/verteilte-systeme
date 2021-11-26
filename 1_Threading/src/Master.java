@@ -4,15 +4,13 @@ import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
-
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.time.Instant;
 
 public class Master {
-
     private int port;
     Boolean connectionOpen;
     private ServerSocket server;
@@ -26,11 +24,8 @@ public class Master {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         Master master = new Master(9876);
-        //Master master2 = new Master(9877);
         master.start();
-        //master2.start();
         master.delegateConnections();
-        //master2.delegateConnections();
     }
 
     public void start() throws IOException {
@@ -54,12 +49,9 @@ public class Master {
                 // Create new object streams for the created socket
                 ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-                System.out.println("---vor-->"+connectionMap);
                 // Create ClientHandler thread and start it
                 Thread thread = new RequestHandler(socket, objectInputStream, objectOutputStream,connectionMap);
                 thread.start();
-
-                System.out.println("---danach-->"+connectionMap);
 
             } catch (Exception e){
                 socket.close();
