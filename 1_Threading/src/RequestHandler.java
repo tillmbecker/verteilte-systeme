@@ -67,6 +67,8 @@ public class RequestHandler extends Thread {
 
             // Save message from client in message_store.txt
             messageStore(incomingMessagePayload + " | " + incomingMessage.getTime());
+
+            // TODO: Add failsave for Socket Exception when slave disconnects
         }
 
         //close resources
