@@ -25,8 +25,11 @@ public class Client {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         Client client = new Client("localhost", 9999);
+        //Client client2 = new Client("localhost", 9998);
         client.connect();
+        //client2.connect();
         client.sendMessages();
+        //client2.sendMessages();
     }
 
     public void connect() throws IOException {
@@ -57,7 +60,7 @@ public class Client {
 
             // Read incoming messages
             incomingMessage = (Message) objectInputStream.readObject();
-            System.out.println(messageSender + " - Message Received: " + incomingMessage.getPayload());
+            System.out.println(messageSender + " - Client: " + incomingMessage.getPayload());
         }
 
 //        requestLastMessage();

@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.Instant;
+import java.util.Map;
 
 public class RequestHandler extends Thread {
     final private Socket socket;
@@ -11,18 +12,19 @@ public class RequestHandler extends Thread {
     final private ObjectOutputStream objectOutputStream;
     private boolean connectionOpen;
     private String messageSender;
+    private Map<Integer,Node> connectionMap;
 
-    public RequestHandler(Socket socket, ObjectInputStream objectInputStream, ObjectOutputStream objectOutputStream) {
+    public RequestHandler(Socket socket, ObjectInputStream objectInputStream, ObjectOutputStream objectOutputStream, Map<Integer,Node> connectionMap) {
         this.socket = socket;
         this.objectInputStream = objectInputStream;
         this.objectOutputStream = objectOutputStream;
+        this.connectionMap = connectionMap;
         connectionOpen = true;
         messageSender = "Master, " + socket.getLocalPort();
     }
 
     @Override
     public void run() {
-
         Message incomingMessage = null;
 
         while (connectionOpen) {
@@ -36,9 +38,20 @@ public class RequestHandler extends Thread {
             }
 
             String incomingMessagePayload = (String) incomingMessage.getPayload();
+            //port from client
+            String incomingMessageSender = incomingMessage.getSender();
+            String[] incomingMessageSenderArr = incomingMessageSender.split(" ");
+            int portClient =Integer.parseInt(incomingMessageSenderArr[1]);
+
             if (incomingMessagePayload == null) incomingMessagePayload = "";
 
-            System.out.println(messageSender + " - Message received: " + incomingMessagePayload);
+            System.out.println(messageSender + " - RH: " + incomingMessagePayload);
+
+            // connnectionMap
+            Node node = new Node(portClient, false, socket );
+            connectionMap.put(portClient, node);
+            System.out.println("connectionMap RH: "+ connectionMap) ;
+
 
             try {
                 sendMessageConfirmation(incomingMessagePayload);
@@ -74,7 +87,7 @@ public class RequestHandler extends Thread {
         Message outgoingMessage = new Message();
 
         // Outgoing message text
-        String messageText = "Message received: " + text;
+        String messageText = "Message received from RH to CH: " + text;
         // Fill outgoingMessage with content
         outgoingMessage.setReceiver("Client");
         outgoingMessage.setSender(messageSender);

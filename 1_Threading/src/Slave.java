@@ -4,7 +4,6 @@ import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.TimeUnit;
 
 public class Slave {
 
@@ -16,7 +15,7 @@ public class Slave {
     Boolean clientConnectionOpen;
 
     ObjectOutputStream masterObjectOutputStream;
-    ObjectInputStream masterobjectInputStream;
+    ObjectInputStream masterObjectInputStream;
 
     public Slave(int slavePort, String masterHost, int masterPort) {
         this.slavePort = slavePort;
@@ -27,9 +26,13 @@ public class Slave {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Slave slave = new Slave(9999, "localhost", 9876);
+        //Slave slave2 = new Slave(9998, "localhost", 9877);
         slave.start();
+        //slave2.start();
         slave.connectToMaster();
+        //slave2.connectToMaster();
         slave.delegateConnections();
+        //slave2.delegateConnections();
     }
 
     public void start() throws IOException {
@@ -45,7 +48,7 @@ public class Slave {
         //write to socket using ObjectOutputStream
         masterObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         //read the server response message
-        masterobjectInputStream = new ObjectInputStream(socket.getInputStream());
+        masterObjectInputStream = new ObjectInputStream(socket.getInputStream());
 //        this.messageSender = "Client, " + socket.getLocalPort();
     }
 
@@ -64,7 +67,7 @@ public class Slave {
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 
                 // Create ClientHandler thread and start it
-                Thread thread = new ClientHandler(socket, objectInputStream, objectOutputStream, masterobjectInputStream, masterObjectOutputStream);
+                Thread thread = new ClientHandler(socket, objectInputStream, objectOutputStream, masterObjectInputStream, masterObjectOutputStream);
                 thread.start();
 
 //                try {
