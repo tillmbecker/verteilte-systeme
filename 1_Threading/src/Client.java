@@ -25,7 +25,7 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        Client client = new Client("localhost", 9876);
+        Client client = new Client("localhost", 9999);
         client.connect();
         client.sendMessages();
     }

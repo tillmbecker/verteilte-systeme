@@ -74,6 +74,9 @@ public class Slave {
             try {
                 socket = server.accept();
 
+                clientObjectInputStream = new ObjectInputStream(socket.getInputStream());
+                clientObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+
                 // Confirm client connection
                 System.out.println("New Client connected: " + socket);
             } catch (Exception e){
@@ -84,6 +87,7 @@ public class Slave {
             try {
                 // Read messages from client and send to master
                 clientMessage = (Message) clientObjectInputStream.readObject();
+                System.out.println("Message from Client received: " + clientMessage);
                 masterObjectOutputStream.writeObject(clientMessage);
                 masterObjectOutputStream.flush();
 
