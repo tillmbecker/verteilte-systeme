@@ -25,8 +25,10 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        Client client = new Client("localhost", 9876);
+        Client client = new Client("localhost", 9999);
         client.connect();
+//        TimeUnit.SECONDS.sleep(5);
+
         client.sendMessages();
     }
 
@@ -61,9 +63,9 @@ public class Client {
             System.out.println(messageSender + " - Message Received: " + incomingMessage.getPayload());
         }
 
-//        TimeUnit.SECONDS.sleep(5);
+        TimeUnit.SECONDS.sleep(5);
 
-        requestLastMessage();
+//        requestLastMessage();
         disconnect();
 //        closeServer();
 

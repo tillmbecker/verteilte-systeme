@@ -4,6 +4,7 @@ import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class Slave {
 
@@ -53,6 +54,7 @@ public class Slave {
         masterObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         //read the server response message
         masterObjectInputStream = new ObjectInputStream(socket.getInputStream());
+        messageSender = "Slave, " + socket.getLocalPort();
 
         Message connectMessage = new Message();
         connectMessage.setType("connect");
@@ -60,8 +62,6 @@ public class Slave {
         connectMessage.setReceiver("Master " + server);
         connectMessage.setSequenceNo(1);
         connectMessage.setPayload(socket.getPort());
-
-        messageSender = "Slave, " + socket.getLocalPort();
     }
 
     public void delegateConnections() throws IOException {
@@ -91,15 +91,20 @@ public class Slave {
                 masterMessage = (Message) masterObjectInputStream.readObject();
                 clientObjectOutputStream.writeObject(masterMessage);
                 clientObjectOutputStream.flush();
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (NullPointerException e) {
                 e.printStackTrace();
+                System.out.println(messageSender + ": Waiting for client message");
+//                break;
+            } catch (ClassNotFoundException e){
+                e.printStackTrace();
+            } catch (SocketException e) {
+
                 System.out.println(messageSender + ": Disconnecting " + socket);
                 try {
                     socket.close();
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
-
                 System.out.println(messageSender + ": Client disconnected.");
                 clientConnectionOpen = false;
                 break;
