@@ -44,7 +44,6 @@ public class Slave {
         // Create the socket server object
         this.server = new ServerSocket(slavePort);
         // Open the client connection
-        clientConnectionOpen = true;
     }
 
     public void connectToMaster() throws IOException {
@@ -68,24 +67,32 @@ public class Slave {
         Message clientMessage;
         Message masterMessage;
 
-        while (clientConnectionOpen) {
-            Socket socket = null;
+        Socket socket = null;
 
+        while (clientConnectionOpen == false) {
             try {
                 socket = server.accept();
 
+                clientObjectInputStream  = new ObjectInputStream(socket.getInputStream());
+                clientObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+
                 // Confirm client connection
                 System.out.println("New Client connected: " + socket);
+                clientConnectionOpen = true;
             } catch (Exception e){
                 socket.close();
                 e.printStackTrace();
             }
+        }
 
+        while (clientConnectionOpen) {
             try {
                 // Read messages from client and send to master
                 clientMessage = (Message) clientObjectInputStream.readObject();
                 masterObjectOutputStream.writeObject(clientMessage);
                 masterObjectOutputStream.flush();
+
+                System.out.println(messageSender + " - Message received: " + clientMessage.getPayload());
 
                 // Read messages from master and send to client
                 masterMessage = (Message) masterObjectInputStream.readObject();
@@ -98,7 +105,7 @@ public class Slave {
             } catch (ClassNotFoundException e){
                 e.printStackTrace();
             } catch (SocketException e) {
-
+                e.printStackTrace();
                 System.out.println(messageSender + ": Disconnecting " + socket);
                 try {
                     socket.close();
@@ -106,8 +113,7 @@ public class Slave {
                     ioException.printStackTrace();
                 }
                 System.out.println(messageSender + ": Client disconnected.");
-                clientConnectionOpen = false;
-                break;
+
             }
         }
         // Close resources
