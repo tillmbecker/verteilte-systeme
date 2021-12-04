@@ -41,27 +41,29 @@ public class RequestHandler extends Thread {
             String incomingMessageType = incomingMessage.getType();
             String incomingMessagePayload = (String) incomingMessage.getPayload();
             int incomingMessageSequenceNumber = incomingMessage.getSequenceNo();
-            //port from client
+
+            // Port from client
             String incomingMessageSender = incomingMessage.getSender();
             String[] incomingMessageSenderArr = incomingMessageSender.split(" ");
-            int portClient =Integer.parseInt(incomingMessageSenderArr[1]);
+            int portClient = Integer.parseInt(incomingMessageSenderArr[1]);
 
             if (incomingMessagePayload == null) incomingMessagePayload = "";
 
             switch (incomingMessageType) {
                 case "connect":
                     // ToDo: Wie kriegen alle anderen Master Threads von der Node Liste mit?
+                    System.out.println(messageSender + " - RH: " + incomingMessagePayload);
+
+                    // connnectionMap
+                    Node node = new Node(portClient, false, socket);
+                    System.out.println("Clientport: " + node.getPortClient());
+                    connectionMap.put(portClient, node);
+                    System.out.println("connectionMap RH: "+ connectionMap);
+
                     break;
                 case "write":
                     // Save message from client in message_store.txt
                     messageStore(incomingMessagePayload + " | " + incomingMessage.getTime());
-            System.out.println(messageSender + " - RH: " + incomingMessagePayload);
-
-            // connnectionMap
-            Node node = new Node(portClient, false, socket);
-            connectionMap.put(portClient, node);
-            System.out.println("connectionMap RH: "+ connectionMap) ;
-
 
                     // Send message confirmation
                     try {
