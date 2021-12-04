@@ -3,7 +3,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class implements java socket client
@@ -61,7 +60,7 @@ public class Client {
 
             // Read incoming messages
             incomingMessage = (Message) objectInputStream.readObject();
-            System.out.println(messageSender + " - Message Received: " + incomingMessage.getPayload());
+            System.out.println(messageSender + " - Client: " + incomingMessage.getPayload());
         }
 
 //        TimeUnit.SECONDS.sleep(5);

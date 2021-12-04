@@ -41,6 +41,9 @@ public class ClientHandler extends Thread {
 
                 // Read messages from master and send to client
                 masterMessage = (Message) masterObjectInputStream.readObject();
+                String masterMessagePayload = (String) masterMessage.getPayload();
+                if (masterMessagePayload == null) masterMessagePayload = "";
+                System.out.println(messageSender + " - CH: " + masterMessagePayload);
                 clientObjectOutputStream.writeObject(masterMessage);
                 clientObjectOutputStream.flush();
             } catch (IOException | ClassNotFoundException e) {

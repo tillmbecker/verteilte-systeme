@@ -1,25 +1,13 @@
+import java.net.Socket;
+
 public class Node {
-    private int port;
-    private boolean master;
+    private int portClient;
+    private boolean isMaster;
+    private Socket socketReference;
 
-    public Node(int port, boolean master) {
-        this.port = port;
-        this.master = master;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public boolean isMaster() {
-        return master;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public void setMaster(boolean master) {
-        this.master = master;
+    public Node(int portClient, boolean isMaster, Socket socketReference) {
+        this.portClient = portClient;
+        this.isMaster = isMaster;
+        this.socketReference = socketReference;
     }
 }
