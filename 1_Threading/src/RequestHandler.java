@@ -28,45 +28,68 @@ public class RequestHandler extends Thread {
         while (connectionOpen) {
             System.out.println(messageSender + ": Waiting for client request");
 
-            //convert ObjectInputStream object to Message
+            // Convert ObjectInputStream object to Message
             try {
                 incomingMessage = (Message) objectInputStream.readObject();
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
             }
-            String incomingMessageType = (String) incomingMessage.getType();
 
-//            switch (incomingMessageType) {
-//                case "connect":
-//                    // ToDo: Wie kriegen alle anderen Master Threads von der Node Liste mit?
-//                default:
-//            }
-
+            // Work on message request
+            String incomingMessageType = incomingMessage.getType();
             String incomingMessagePayload = (String) incomingMessage.getPayload();
+            int incomingMessageSequenceNumber = incomingMessage.getSequenceNo();
             if (incomingMessagePayload == null) incomingMessagePayload = "";
 
-            System.out.println(messageSender + " - Message received: " + incomingMessagePayload);
+            switch (incomingMessageType) {
+                case "connect":
+                    // ToDo: Wie kriegen alle anderen Master Threads von der Node Liste mit?
+                    break;
+                case "write":
+                    // Save message from client in message_store.txt
+                    messageStore(incomingMessagePayload + " | " + incomingMessage.getTime());
 
-            // Send a message confirmation before message will be worked
-            try {
-                sendMessageConfirmation(incomingMessagePayload);
-            } catch (IOException e) {
-                e.printStackTrace();
+                    // Send message confirmation
+                    try {
+                        sendMessageConfirmation(incomingMessagePayload, incomingMessageSequenceNumber);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    // Print message from client
+                    printClientMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
+                    break;
+                case "read":
+                    try {
+                        sendLastMessage();
+
+                        // Print message from client
+                        printClientMessage(incomingMessagePayload, incomingMessage.getSequenceNo(), incomingMessageType);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                default:
+                    break;
             }
 
-            if(incomingMessagePayload.contains("!/lastmessage/!")) {
-                try {
-                    sendLastMessage();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+
+
+
+
+//            if(incomingMessagePayload.contains("!/lastmessage/!")) {
+//                try {
+//                    sendLastMessage();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 
             //terminate the server if client sends exit request
 //            if(incomingMessagePayload.contains(("!/exit/!"))) connectionOpen = false;
 
-            // Save message from client in message_store.txt
-            messageStore(incomingMessagePayload + " | " + incomingMessage.getTime());
+
 
             // TODO: Add failsave for Socket Exception when slave disconnects
         }
@@ -80,12 +103,15 @@ public class RequestHandler extends Thread {
         }
     }
 
+    public void printClientMessage(String payload, int sequenceNumber, String type) {
+        System.out.println(messageSender + " - Message received. " + " \nPayload: " + payload +  "\nSequence Number: " + sequenceNumber + "\nType: " + type);
+    }
 
-    public void sendMessageConfirmation (String text) throws IOException {
+    public void sendMessageConfirmation (String payload, int sequenceNumber) throws IOException {
         Message outgoingMessage = new Message();
 
         // Outgoing message text
-        String messageText = "Message received: " + text;
+        String messageText = "Message saved. \nPayload: " + payload +  "\nSequence Number: " + sequenceNumber;
         // Fill outgoingMessage with content
         outgoingMessage.setReceiver("Client");
         outgoingMessage.setSender(messageSender);
@@ -93,6 +119,7 @@ public class RequestHandler extends Thread {
         outgoingMessage.setPayload(messageText);
 
         objectOutputStream.writeObject(outgoingMessage);
+        objectOutputStream.flush();
     }
 
     public void messageStore(String message) {
@@ -107,6 +134,7 @@ public class RequestHandler extends Thread {
 
         // Outgoing message text
         String messageText = fileEditor.readLastLine("message_store.txt");
+        System.out.println(messageText);
         // Fill outgoingMessage with content
         outgoingMessage.setReceiver("Client");
         outgoingMessage.setSender(messageSender);

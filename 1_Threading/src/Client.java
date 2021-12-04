@@ -46,13 +46,15 @@ public class Client {
 
         for (int i=0; i<5;i++) {
             System.out.println(messageSender + ": Sending request to Socket Server");
-            // Outgoing message text
+//          Outgoing message text
             String messageText = "" + i;
             // Fill outgoingMessage with content
             Message outgoingMessage = new Message();
             outgoingMessage.setReceiver("Server");
             outgoingMessage.setSender(messageSender);
             outgoingMessage.setPayload(messageText);
+            outgoingMessage.setType("write");
+            outgoingMessage.setSequenceNo(i);
 
             objectOutputStream.writeObject(outgoingMessage);
             objectOutputStream.flush();
@@ -64,7 +66,7 @@ public class Client {
 
 //        TimeUnit.SECONDS.sleep(5);
 
-//        requestLastMessage();
+        requestLastMessage();
         disconnect();
 //        closeServer();
 
@@ -75,12 +77,13 @@ public class Client {
         Message outgoingMessage = new Message();
 
         // Outgoing message text
-        String messageText = "!/lastmessage/!";
+        String messageText = "";
         // Fill outgoingMessage with content
         outgoingMessage.setReceiver("Server");
         outgoingMessage.setSender(messageSender);
         outgoingMessage.setTime(Instant.now());
         outgoingMessage.setPayload(messageText);
+        outgoingMessage.setType("read");
 
         objectOutputStream.writeObject(outgoingMessage);
         objectOutputStream.flush();

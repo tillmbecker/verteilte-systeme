@@ -112,9 +112,6 @@ public class Slave {
 
                 // After client disconnects, slave is made available for a new client
                 clientConnectionOpen = false;
-                clientObjectOutputStream.close();
-                clientObjectInputStream.close();
-//                socket.close();
 
                 // Wait for new client connection
                 waitForClientConnection();
