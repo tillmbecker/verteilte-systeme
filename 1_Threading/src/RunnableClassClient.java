@@ -10,8 +10,8 @@ public class RunnableClassClient implements Runnable {
         try {
             client.connect();
             client.sendMessages();
-//            client.requestLastMessage();
-//            client.closeServer();
+            client.requestLastMessage();
+            client.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }
