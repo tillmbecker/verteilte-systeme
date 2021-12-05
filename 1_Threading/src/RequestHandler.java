@@ -37,28 +37,39 @@ public class RequestHandler extends Thread {
                 e.printStackTrace();
             }
 
-            // Work on message request
+            // Extract message meta information
             String incomingMessageType = incomingMessage.getType();
             String incomingMessagePayload = (String) incomingMessage.getPayload();
+            if (incomingMessagePayload == null) incomingMessagePayload = "";
             int incomingMessageSequenceNumber = incomingMessage.getSequenceNo();
 
             // Port from client
             String incomingMessageSender = incomingMessage.getSender();
             String[] incomingMessageSenderArr = incomingMessageSender.split(" ");
-            int portClient = Integer.parseInt(incomingMessageSenderArr[1]);
 
-            if (incomingMessagePayload == null) incomingMessagePayload = "";
-
+            // Work on message request
             switch (incomingMessageType) {
                 case "connect":
+                    //FIXME: Awaits client connection and not slave as it should be
                     // ToDo: Wie kriegen alle anderen Master Threads von der Node Liste mit?
-                    System.out.println(messageSender + " - RH: " + incomingMessagePayload);
+//                    System.out.println(messageSender + " - RH: " + incomingMessagePayload);
 
                     // connnectionMap
-                    Node node = new Node(portClient, false, socket);
-                    System.out.println("Clientport: " + node.getPortClient());
-                    connectionMap.put(portClient, node);
-                    System.out.println("connectionMap RH: "+ connectionMap);
+                    int slavePort = Integer.parseInt(incomingMessagePayload);
+
+                    Node node = new Node(slavePort, false, socket);
+//                    System.out.println("Clientport: " + node.getPortClient());
+                    connectionMap.put(slavePort, node);
+                    System.out.println("ConnectionMap Update: "+ connectionMap);
+
+                    printClientMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
+
+                    // Send a message confirmation
+                    try {
+                        sendConnectionConfirmation(incomingMessagePayload, incomingMessageSequenceNumber);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
                     break;
                 case "write":
@@ -89,16 +100,10 @@ public class RequestHandler extends Thread {
                 default:
                     break;
             }
-
-            //terminate the server if client sends exit request
-//            if(incomingMessagePayload.contains(("!/exit/!"))) connectionOpen = false;
-
-
-
             // TODO: Add failsave for Socket Exception when slave disconnects
         }
 
-        //close resources
+        //Close resources
         try {
             objectInputStream.close();
             objectOutputStream.close();
@@ -108,7 +113,23 @@ public class RequestHandler extends Thread {
     }
 
     public void printClientMessage(String payload, int sequenceNumber, String type) {
-        System.out.println(messageSender + " - Message received. " + " \nPayload: " + payload +  "\nSequence Number: " + sequenceNumber + "\nType: " + type);
+        System.out.println("---\n" + messageSender + " - Message received. " + " \nPayload: " + payload +  "\nSequence Number: " + sequenceNumber + "\nType: " + type);
+    }
+
+    public void sendConnectionConfirmation (String payload, int sequenceNumber) throws IOException {
+        Message outgoingMessage = new Message();
+
+        // Outgoing message text
+        String messageText = "Connection acknowledged. \nPayload: " + payload +  "\nSequence Number: " + sequenceNumber;
+        // Fill outgoingMessage with content
+        outgoingMessage.setReceiver("Client");
+        outgoingMessage.setSender(messageSender);
+        outgoingMessage.setTime(Instant.now());
+        outgoingMessage.setPayload(messageText);
+        outgoingMessage.setType("acknowledge");
+
+        objectOutputStream.writeObject(outgoingMessage);
+        objectOutputStream.flush();
     }
 
     public void sendMessageConfirmation (String payload, int sequenceNumber) throws IOException {
