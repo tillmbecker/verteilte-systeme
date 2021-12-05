@@ -30,7 +30,7 @@ public class Client {
         client.sendMessages();
     }
 
-    public void connect() throws IOException {
+    public void connect() throws IOException, ClassNotFoundException {
         // Connect to server
         this.socket = new Socket(host, port);
         //write to socket using ObjectOutputStream
@@ -38,6 +38,12 @@ public class Client {
         //read the server response message
         objectInputStream = new ObjectInputStream(socket.getInputStream());
         this.messageSender = "Client, " + socket.getLocalPort();
+
+//        sendConnectMessage();
+    }
+
+    public void printMasterMessages(String payload, int sequenceNumber, String type) {
+        System.out.println("---\n" + messageSender + " - Message received: " + "\n*Payload:\n" + payload +  "\n*Sequence Number: " + sequenceNumber + "\n*Type: " + type + "\n---");
     }
 
     public void sendMessages() throws ClassNotFoundException, IOException, InterruptedException {
@@ -58,15 +64,17 @@ public class Client {
             objectOutputStream.writeObject(outgoingMessage);
             objectOutputStream.flush();
 
+            System.out.println(messageSender + " | Messsage sent: " + outgoingMessage.getPayload());
+
             // Read incoming messages
             incomingMessage = (Message) objectInputStream.readObject();
-            System.out.println(messageSender + " - Client: " + incomingMessage.getPayload());
+            printMasterMessages(String.valueOf(incomingMessage.getPayload()), incomingMessage.getSequenceNo(), incomingMessage.getType());
         }
 
 //        TimeUnit.SECONDS.sleep(5);
 
-        requestLastMessage();
-        disconnect();
+//        requestLastMessage();
+//        disconnect();
 //        closeServer();
 
 //        ToDo: Die Streams schließen bringt das Programm zum Absturz, obwohl der Server schon geschlossen wurde
@@ -89,7 +97,7 @@ public class Client {
 
         Message lastMessage = (Message) objectInputStream.readObject();
 
-        System.out.println(messageSender + " - Last message to server: "+ lastMessage.getPayload());
+        printMasterMessages(String.valueOf(lastMessage.getPayload()), lastMessage.getSequenceNo(), lastMessage.getType());
     }
 
     public void closeServer() throws IOException {
