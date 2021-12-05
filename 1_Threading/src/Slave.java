@@ -48,7 +48,7 @@ public class Slave {
         // Open the client connection
     }
 
-    public void connectToMaster() throws IOException {
+    public void connectToMaster() throws IOException, ClassNotFoundException {
         // Connect to server
         this.socket = new Socket(masterHost, masterPort);
         //write to socket using ObjectOutputStream
@@ -57,12 +57,27 @@ public class Slave {
         masterObjectInputStream = new ObjectInputStream(socket.getInputStream());
         messageSender = "Slave, " + socket.getLocalPort();
 
-        Message connectMessage = new Message();
-        connectMessage.setType("connect");
-        connectMessage.setSender("Slave " + socket);
-        connectMessage.setReceiver("Master " + server);
-        connectMessage.setSequenceNo(1);
-        connectMessage.setPayload(socket.getPort());
+        sendConnectMessage();
+    }
+
+    public void sendConnectMessage() throws IOException, ClassNotFoundException {
+//      FIXME: Message-Sende-Protokoll-Methoden in eine andere Klasse auslagern
+        Message outgoingMessage = new Message();
+        outgoingMessage.setReceiver("Server");
+        outgoingMessage.setSender(messageSender);
+        outgoingMessage.setPayload(String.valueOf(socket.getLocalPort()));
+        outgoingMessage.setType("connect");
+        outgoingMessage.setSequenceNo(0);
+
+        masterObjectOutputStream.writeObject(outgoingMessage);
+        masterObjectOutputStream.flush();
+
+        Message incomingMessage = (Message) masterObjectInputStream.readObject();
+        printMasterMessages(String.valueOf(incomingMessage.getPayload()), incomingMessage.getSequenceNo(), incomingMessage.getType());
+    }
+
+    public void printMasterMessages(String payload, int sequenceNumber, String type) {
+        System.out.println("---\n" + messageSender + " - Message received: " + "\n*Payload:\n" + payload +  "\n*Sequence Number: " + sequenceNumber + "\n*Type: " + type + "\n---");
     }
 
     public void delegateConnections() throws IOException {

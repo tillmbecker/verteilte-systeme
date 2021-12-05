@@ -1,7 +1,7 @@
 import java.io.IOException;
 
 public class RunnableClassClient implements Runnable {
-    Client client = new Client("localhost", 9876);
+    Client client = new Client("localhost", 9001);
 
     public RunnableClassClient() {
     }

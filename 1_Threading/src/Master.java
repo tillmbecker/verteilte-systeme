@@ -1,24 +1,27 @@
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Master {
-    Map<Integer, Socket> clients = new HashMap<Integer, Socket>();
+import java.time.Instant;
 
+public class Master {
     private int port;
     Boolean connectionOpen;
     private ServerSocket server;
 
+    private Map<Integer,Node> connectionMap;
+
     public Master (int port) {
         this.port = port;
         connectionOpen = false;
+//        FIXME: ConcurrentHashMap scheint hierfür besser geeignet zu sein
+        connectionMap = Collections.synchronizedMap(new HashMap<Integer,Node>());
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
@@ -40,18 +43,15 @@ public class Master {
 
             try {
                 socket = server.accept();
-
                 // Confirm client connection
                 System.out.println("New Slave connected: " + socket);
 
                 // Create new object streams for the created socket
                 ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-
                 // Create ClientHandler thread and start it
-                Thread thread = new RequestHandler(socket, objectInputStream, objectOutputStream);
+                Thread thread = new RequestHandler(socket, objectInputStream, objectOutputStream, connectionMap);
                 thread.start();
-
             } catch (Exception e){
                 socket.close();
                 e.printStackTrace();
