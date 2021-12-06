@@ -5,10 +5,8 @@ import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 
 public class Slave {
-
     // Variable declaration for master
     private ServerSocket server;
     private int masterPort;
@@ -57,16 +55,16 @@ public class Slave {
         masterObjectInputStream = new ObjectInputStream(socket.getInputStream());
         messageSender = "Slave, " + socket.getLocalPort();
 
-        sendConnectMessage();
+        sendJoinMessage();
     }
 
-    public void sendConnectMessage() throws IOException, ClassNotFoundException {
+    public void sendJoinMessage() throws IOException, ClassNotFoundException {
 //      FIXME: Message-Sende-Protokoll-Methoden in eine andere Klasse auslagern
         Message outgoingMessage = new Message();
         outgoingMessage.setReceiver("Server");
         outgoingMessage.setSender(messageSender);
         outgoingMessage.setPayload(String.valueOf(socket.getLocalPort()));
-        outgoingMessage.setType("connect");
+        outgoingMessage.setType("join");
         outgoingMessage.setSequenceNo(0);
 
         masterObjectOutputStream.writeObject(outgoingMessage);

@@ -49,20 +49,15 @@ public class RequestHandler extends Thread {
 
             // Work on message request
             switch (incomingMessageType) {
-                case "connect":
-                    //FIXME: Awaits client connection and not slave as it should be
-                    // ToDo: Wie kriegen alle anderen Master Threads von der Node Liste mit?
-//                    System.out.println(messageSender + " - RH: " + incomingMessagePayload);
-
+                case "join":
                     // connnectionMap
                     int slavePort = Integer.parseInt(incomingMessagePayload);
 
                     Node node = new Node(slavePort, false, socket);
-//                    System.out.println("Clientport: " + node.getPortClient());
                     connectionMap.put(slavePort, node);
                     System.out.println("ConnectionMap Update: "+ connectionMap);
 
-                    printClientMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
+                    printIncomingMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
 
                     // Send a message confirmation
                     try {
@@ -84,14 +79,14 @@ public class RequestHandler extends Thread {
                     }
 
                     // Print message from client
-                    printClientMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
+                    printIncomingMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
                     break;
                 case "read":
                     try {
                         sendLastMessage();
 
                         // Print message from client
-                        printClientMessage(incomingMessagePayload, incomingMessage.getSequenceNo(), incomingMessageType);
+                        printIncomingMessage(incomingMessagePayload, incomingMessage.getSequenceNo(), incomingMessageType);
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -112,7 +107,7 @@ public class RequestHandler extends Thread {
         }
     }
 
-    public void printClientMessage(String payload, int sequenceNumber, String type) {
+    public void printIncomingMessage(String payload, int sequenceNumber, String type) {
         System.out.println("---\n" + messageSender + " - Message received. " + " \nPayload: " + payload +  "\nSequence Number: " + sequenceNumber + "\nType: " + type);
     }
 
