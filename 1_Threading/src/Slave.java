@@ -1,3 +1,4 @@
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -37,7 +38,8 @@ public class Slave {
         Slave slave = new Slave(9999, "localhost", 9876);
         slave.start();
         slave.connectToMaster();
-        slave.delegateConnections();
+        slave.waitForClientConnection();
+//        slave.delegateConnections();
     }
 
     public void start() throws IOException {
@@ -46,7 +48,7 @@ public class Slave {
         // Open the client connection
     }
 
-    public void connectToMaster() throws IOException {
+    public void connectToMaster() throws IOException, ClassNotFoundException {
         // Connect to server
         this.socket = new Socket(masterHost, masterPort);
         //write to socket using ObjectOutputStream
@@ -55,35 +57,33 @@ public class Slave {
         masterObjectInputStream = new ObjectInputStream(socket.getInputStream());
         messageSender = "Slave, " + socket.getLocalPort();
 
-        Message connectMessage = new Message();
-        connectMessage.setType("connect");
-        connectMessage.setSender("Slave " + socket);
-        connectMessage.setReceiver("Master " + server);
-        connectMessage.setSequenceNo(1);
-        connectMessage.setPayload(socket.getPort());
+        sendConnectMessage();
+    }
+
+    public void sendConnectMessage() throws IOException, ClassNotFoundException {
+//      FIXME: Message-Sende-Protokoll-Methoden in eine andere Klasse auslagern
+        Message outgoingMessage = new Message();
+        outgoingMessage.setReceiver("Server");
+        outgoingMessage.setSender(messageSender);
+        outgoingMessage.setPayload(String.valueOf(socket.getLocalPort()));
+        outgoingMessage.setType("connect");
+        outgoingMessage.setSequenceNo(0);
+
+        masterObjectOutputStream.writeObject(outgoingMessage);
+        masterObjectOutputStream.flush();
+
+        Message incomingMessage = (Message) masterObjectInputStream.readObject();
+        printMasterMessages(String.valueOf(incomingMessage.getPayload()), incomingMessage.getSequenceNo(), incomingMessage.getType());
+    }
+
+    public void printMasterMessages(String payload, int sequenceNumber, String type) {
+        System.out.println("---\n" + messageSender + " - Message received: " + "\n*Payload:\n" + payload +  "\n*Sequence Number: " + sequenceNumber + "\n*Type: " + type + "\n---");
     }
 
     public void delegateConnections() throws IOException {
         Message clientMessage;
         Message masterMessage;
 
-        Socket socket = null;
-
-        while (clientConnectionOpen == false) {
-            try {
-                socket = server.accept();
-
-                clientObjectInputStream  = new ObjectInputStream(socket.getInputStream());
-                clientObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-
-                // Confirm client connection
-                System.out.println("New Client connected: " + socket);
-                clientConnectionOpen = true;
-            } catch (Exception e){
-                socket.close();
-                e.printStackTrace();
-            }
-        }
 
         while (clientConnectionOpen) {
             try {
@@ -104,16 +104,32 @@ public class Slave {
 //                break;
             } catch (ClassNotFoundException e){
                 e.printStackTrace();
-            } catch (SocketException e) {
-                e.printStackTrace();
+            }
+//            catch (SocketException e) {
+//                e.printStackTrace();
+//                System.out.println(messageSender + ": Disconnecting " + socket);
+//                try {
+//                    socket.close();
+//                } catch (IOException ioException) {
+//                    ioException.printStackTrace();
+//                }
+//                System.out.println(messageSender + ": Client disconnected.");
+//            }
+            catch (EOFException e) {
                 System.out.println(messageSender + ": Disconnecting " + socket);
-                try {
-                    socket.close();
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
+                disconnectClientSlaveConnection();
+
+//                try {
+//                } catch (IOException ioException) {
+//                    ioException.printStackTrace();
+//                }
                 System.out.println(messageSender + ": Client disconnected.");
 
+                // After client disconnects, slave is made available for a new client
+                clientConnectionOpen = false;
+
+                // Wait for new client connection
+                waitForClientConnection();
             }
         }
         // Close resources
@@ -123,5 +139,32 @@ public class Slave {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void waitForClientConnection() throws IOException {
+        Socket socket = new Socket();
+
+        while (clientConnectionOpen == false) {
+            try {
+                socket = server.accept();
+
+                clientObjectInputStream  = new ObjectInputStream(socket.getInputStream());
+                clientObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+
+                // Confirm client connection
+                System.out.println("New Client connected: " + socket);
+                clientConnectionOpen = true;
+            } catch (Exception e){
+                socket.close();
+                e.printStackTrace();
+            }
+        }
+
+        delegateConnections();
+    }
+
+    public void disconnectClientSlaveConnection() throws IOException {
+        clientObjectOutputStream.close();
+        clientObjectInputStream.close();
     }
 }
