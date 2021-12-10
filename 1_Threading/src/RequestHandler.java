@@ -47,6 +47,8 @@ public class RequestHandler extends Thread {
             String incomingMessageSender = incomingMessage.getSender();
             String[] incomingMessageSenderArr = incomingMessageSender.split(" ");
 
+            int nodeId = connectionMap.size();
+
             // Work on message request
             switch (incomingMessageType) {
                 case "connect":
@@ -55,12 +57,16 @@ public class RequestHandler extends Thread {
 //                    System.out.println(messageSender + " - RH: " + incomingMessagePayload);
 
                     // connnectionMap
-                    int slavePort = Integer.parseInt(incomingMessagePayload);
+//                    int slavePort = Integer.parseInt(incomingMessagePayload);
+                    // connnectionMap
+                    Node node = new Node(nodeId, false, socket );
+                    connectionMap.put(nodeId, node);
+                    System.out.println("connectionMap RH: "+ connectionMap) ;
 
-                    Node node = new Node(slavePort, false, socket);
+//                    Node node = new Node(slavePort, false, socket);
 //                    System.out.println("Clientport: " + node.getPortClient());
-                    connectionMap.put(slavePort, node);
-                    System.out.println("ConnectionMap Update: "+ connectionMap);
+//                    connectionMap.put(slavePort, node);
+//                    System.out.println("ConnectionMap Update: "+ connectionMap);
 
                     printClientMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
 

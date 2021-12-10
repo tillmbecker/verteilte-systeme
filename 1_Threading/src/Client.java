@@ -3,6 +3,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class implements java socket client
@@ -74,7 +75,7 @@ public class Client {
 //        TimeUnit.SECONDS.sleep(5);
 
 //        requestLastMessage();
-//        disconnect();
+          disconnect();
 //        closeServer();
 
 //        ToDo: Die Streams schließen bringt das Programm zum Absturz, obwohl der Server schon geschlossen wurde
