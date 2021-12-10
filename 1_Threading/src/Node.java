@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.net.Socket;
 
-public class Node {
+public class Node implements Serializable {
     private int portClient;
     private boolean isMaster;
     private Socket socketReference;

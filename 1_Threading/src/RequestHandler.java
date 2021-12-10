@@ -48,15 +48,16 @@ public class RequestHandler extends Thread {
             //port from client
             String incomingMessageSender = incomingMessage.getSender();
             String[] incomingMessageSenderArr = incomingMessageSender.split(" ");
-            int portClient =Integer.parseInt(incomingMessageSenderArr[1]);
+            //int portClient =Integer.parseInt(incomingMessageSenderArr[1]);
+            int nodeId = connectionMap.size();
 
             if (incomingMessagePayload == null) incomingMessagePayload = "";
 
             System.out.println(messageSender + " - RH: " + incomingMessagePayload);
 
             // connnectionMap
-            Node node = new Node(portClient, false, socket );
-            connectionMap.put(portClient, node);
+            Node node = new Node(nodeId, false, socket );
+            connectionMap.put(nodeId, node);
             System.out.println("connectionMap RH: "+ connectionMap) ;
 
 

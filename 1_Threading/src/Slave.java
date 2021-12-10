@@ -1,10 +1,10 @@
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 
 public class Slave {
 
@@ -37,7 +37,8 @@ public class Slave {
         Slave slave = new Slave(9999, "localhost", 9876);
         slave.start();
         slave.connectToMaster();
-        slave.delegateConnections();
+        slave.waitForClientConnection();
+//        slave.delegateConnections();
     }
 
     public void start() throws IOException {
@@ -67,23 +68,6 @@ public class Slave {
         Message clientMessage;
         Message masterMessage;
 
-        Socket socket = null;
-
-        while (clientConnectionOpen == false) {
-            try {
-                socket = server.accept();
-
-                clientObjectInputStream  = new ObjectInputStream(socket.getInputStream());
-                clientObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-
-                // Confirm client connection
-                System.out.println("New Client connected: " + socket);
-                clientConnectionOpen = true;
-            } catch (Exception e){
-                socket.close();
-                e.printStackTrace();
-            }
-        }
 
         while (clientConnectionOpen) {
             try {
@@ -104,16 +88,35 @@ public class Slave {
 //                break;
             } catch (ClassNotFoundException e){
                 e.printStackTrace();
-            } catch (SocketException e) {
-                e.printStackTrace();
+            }
+//            catch (SocketException e) {
+//                e.printStackTrace();
+//                System.out.println(messageSender + ": Disconnecting " + socket);
+//                try {
+//                    socket.close();
+//                } catch (IOException ioException) {
+//                    ioException.printStackTrace();
+//                }
+//                System.out.println(messageSender + ": Client disconnected.");
+//            }
+            catch (EOFException e) {
                 System.out.println(messageSender + ": Disconnecting " + socket);
-                try {
-                    socket.close();
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
+                disconnectClientSlaveConnection();
+
+//                try {
+//                } catch (IOException ioException) {
+//                    ioException.printStackTrace();
+//                }
                 System.out.println(messageSender + ": Client disconnected.");
 
+                // After client disconnects, slave is made available for a new client
+                clientConnectionOpen = false;
+                clientObjectOutputStream.close();
+                clientObjectInputStream.close();
+//                socket.close();
+
+                // Wait for new client connection
+                waitForClientConnection();
             }
         }
         // Close resources
@@ -123,5 +126,32 @@ public class Slave {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void waitForClientConnection() throws IOException {
+        Socket socket = new Socket();
+
+        while (clientConnectionOpen == false) {
+            try {
+                socket = server.accept();
+
+                clientObjectInputStream  = new ObjectInputStream(socket.getInputStream());
+                clientObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+
+                // Confirm client connection
+                System.out.println("New Client connected: " + socket);
+                clientConnectionOpen = true;
+            } catch (Exception e){
+                socket.close();
+                e.printStackTrace();
+            }
+        }
+
+        delegateConnections();
+    }
+
+    public void disconnectClientSlaveConnection() throws IOException {
+        clientObjectOutputStream.close();
+        clientObjectInputStream.close();
     }
 }
