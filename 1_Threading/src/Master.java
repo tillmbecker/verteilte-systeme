@@ -15,11 +15,13 @@ public class Master {
     Boolean connectionOpen;
     private ServerSocket server;
 
-    private Map<Integer,Node> connectionMap = null;
+    private Map<Integer,Node> connectionMap;
 
     public Master (int port) {
         this.port = port;
         connectionOpen = false;
+//        FIXME: ConcurrentHashMap scheint hierfür besser geeignet zu sein
+        connectionMap = Collections.synchronizedMap(new HashMap<Integer,Node>());
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
@@ -36,8 +38,6 @@ public class Master {
     }
 
     public void delegateConnections() throws IOException {
-        connectionMap = Collections.synchronizedMap(new HashMap<Integer,Node>());
-
         while (connectionOpen) {
             Socket socket = null;
 
@@ -50,9 +50,8 @@ public class Master {
                 ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                 // Create ClientHandler thread and start it
-                Thread thread = new RequestHandler(socket, objectInputStream, objectOutputStream,connectionMap);
+                Thread thread = new RequestHandler(socket, objectInputStream, objectOutputStream, connectionMap);
                 thread.start();
-
             } catch (Exception e){
                 socket.close();
                 e.printStackTrace();

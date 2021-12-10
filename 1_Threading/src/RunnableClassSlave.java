@@ -8,7 +8,7 @@ private Slave slave;
         try {
             slave.start();
             slave.connectToMaster();
-            slave.delegateConnections();
+            slave.waitForClientConnection();
         } catch (Exception e) {
             e.printStackTrace();
         }

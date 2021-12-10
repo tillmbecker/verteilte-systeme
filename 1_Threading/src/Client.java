@@ -28,11 +28,10 @@ public class Client {
         Client client = new Client("localhost", 9999);
         client.connect();
 //        TimeUnit.SECONDS.sleep(5);
-
         client.sendMessages();
     }
 
-    public void connect() throws IOException {
+    public void connect() throws IOException, ClassNotFoundException {
         // Connect to server
         this.socket = new Socket(host, port);
         //write to socket using ObjectOutputStream
@@ -40,6 +39,12 @@ public class Client {
         //read the server response message
         objectInputStream = new ObjectInputStream(socket.getInputStream());
         this.messageSender = "Client, " + socket.getLocalPort();
+
+//        sendConnectMessage();
+    }
+
+    public void printMasterMessages(String payload, int sequenceNumber, String type) {
+        System.out.println("---\n" + messageSender + " - Message received: " + "\n*Payload:\n" + payload +  "\n*Sequence Number: " + sequenceNumber + "\n*Type: " + type + "\n---");
     }
 
     public void sendMessages() throws ClassNotFoundException, IOException, InterruptedException {
@@ -47,26 +52,30 @@ public class Client {
 
         for (int i=0; i<5;i++) {
             System.out.println(messageSender + ": Sending request to Socket Server");
-            // Outgoing message text
+//          Outgoing message text
             String messageText = "" + i;
             // Fill outgoingMessage with content
             Message outgoingMessage = new Message();
             outgoingMessage.setReceiver("Server");
             outgoingMessage.setSender(messageSender);
             outgoingMessage.setPayload(messageText);
+            outgoingMessage.setType("write");
+            outgoingMessage.setSequenceNo(i);
 
             objectOutputStream.writeObject(outgoingMessage);
             objectOutputStream.flush();
 
+            System.out.println(messageSender + " | Messsage sent: " + outgoingMessage.getPayload());
+
             // Read incoming messages
             incomingMessage = (Message) objectInputStream.readObject();
-            System.out.println(messageSender + " - Client: " + incomingMessage.getPayload());
+            printMasterMessages(String.valueOf(incomingMessage.getPayload()), incomingMessage.getSequenceNo(), incomingMessage.getType());
         }
 
-        TimeUnit.SECONDS.sleep(5);
+//        TimeUnit.SECONDS.sleep(5);
 
 //        requestLastMessage();
-        disconnect();
+          disconnect();
 //        closeServer();
 
 //        ToDo: Die Streams schließen bringt das Programm zum Absturz, obwohl der Server schon geschlossen wurde
@@ -76,19 +85,20 @@ public class Client {
         Message outgoingMessage = new Message();
 
         // Outgoing message text
-        String messageText = "!/lastmessage/!";
+        String messageText = "";
         // Fill outgoingMessage with content
         outgoingMessage.setReceiver("Server");
         outgoingMessage.setSender(messageSender);
         outgoingMessage.setTime(Instant.now());
         outgoingMessage.setPayload(messageText);
+        outgoingMessage.setType("read");
 
         objectOutputStream.writeObject(outgoingMessage);
         objectOutputStream.flush();
 
         Message lastMessage = (Message) objectInputStream.readObject();
 
-        System.out.println(messageSender + " - Last message to server: "+ lastMessage.getPayload());
+        printMasterMessages(String.valueOf(lastMessage.getPayload()), lastMessage.getSequenceNo(), lastMessage.getType());
     }
 
     public void closeServer() throws IOException {
