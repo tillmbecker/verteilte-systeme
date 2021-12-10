@@ -6,6 +6,7 @@ import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.concurrent.TimeUnit;
 
 public class Slave {
 
@@ -38,7 +39,9 @@ public class Slave {
         Slave slave = new Slave(9999, "localhost", 9876);
         slave.start();
         slave.connectToMaster();
-        slave.waitForClientConnection();
+        //slave.waitForClientConnection();
+        TimeUnit.SECONDS.sleep(5);
+        slave.disconnectFromMaster();
 //        slave.delegateConnections();
     }
 
@@ -136,6 +139,27 @@ public class Slave {
         try {
             clientObjectInputStream.close();
             clientObjectOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void disconnectFromMaster() throws IOException {
+        System.out.println("Set Message");
+        Message outgoingMessage = new Message();
+        outgoingMessage.setReceiver("Server");
+        outgoingMessage.setSender(messageSender);
+        outgoingMessage.setPayload(String.valueOf(socket.getLocalPort()));
+        outgoingMessage.setType("leave");
+        outgoingMessage.setSequenceNo(0);
+
+        masterObjectOutputStream.writeObject(outgoingMessage);
+        masterObjectOutputStream.flush();
+
+
+        try{
+            masterObjectInputStream.close();
+            masterObjectOutputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

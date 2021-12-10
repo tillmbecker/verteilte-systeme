@@ -97,6 +97,15 @@ public class RequestHandler extends Thread {
                         e.printStackTrace();
                     }
                     break;
+                case "leave":
+                    slavePort = Integer.parseInt(incomingMessagePayload);
+
+                    connectionMap.remove(slavePort);
+                    System.out.println("ConnectionMap Update: "+ connectionMap);
+
+                    printClientMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
+                    connectionOpen = false;
+
                 default:
                     break;
             }
