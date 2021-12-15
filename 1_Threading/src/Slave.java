@@ -98,28 +98,13 @@ public class Slave {
             } catch (NullPointerException e) {
                 e.printStackTrace();
                 System.out.println(messageSender + ": Waiting for client message");
-//                break;
             } catch (ClassNotFoundException e){
                 e.printStackTrace();
             }
-//            catch (SocketException e) {
-//                e.printStackTrace();
-//                System.out.println(messageSender + ": Disconnecting " + socket);
-//                try {
-//                    socket.close();
-//                } catch (IOException ioException) {
-//                    ioException.printStackTrace();
-//                }
-//                System.out.println(messageSender + ": Client disconnected.");
-//            }
             catch (EOFException e) {
                 System.out.println(messageSender + ": Disconnecting " + socket);
                 disconnectClientSlaveConnection();
 
-//                try {
-//                } catch (IOException ioException) {
-//                    ioException.printStackTrace();
-//                }
                 System.out.println(messageSender + ": Client disconnected.");
 
                 // After client disconnects, slave is made available for a new client
