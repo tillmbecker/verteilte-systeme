@@ -5,10 +5,7 @@ import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import java.time.Instant;
 
@@ -18,12 +15,14 @@ public class Master {
     private ServerSocket server;
 
     private Map<Integer,Node> connectionMap;
+    private List<RequestHandler> requestHandlerList;
 
     public Master (int port) {
         this.port = port;
         connectionOpen = false;
 //        FIXME: ConcurrentHashMap scheint hierfür besser geeignet zu sein
         connectionMap = Collections.synchronizedMap(new HashMap<Integer,Node>());
+        requestHandlerList = new ArrayList<RequestHandler>();
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
@@ -54,7 +53,8 @@ public class Master {
                 // Create ClientHandler thread and start it
                 Thread thread = new RequestHandler(this, socket, objectInputStream, objectOutputStream, connectionMap);
                 thread.start();
-            } catch (Exception e) {
+                requestHandlerList.add((RequestHandler) thread);
+            } catch (Exception e){
                 socket.close();
                 e.printStackTrace();
             }

@@ -49,15 +49,23 @@ public class RequestHandler extends Thread {
             String incomingMessageSender = incomingMessage.getSender();
             String[] incomingMessageSenderArr = incomingMessageSender.split(" ");
 
+            int nodeId = connectionMap.size();
+
             // Work on message request
             switch (incomingMessageType) {
                 case "join":
                     // connnectionMap
                     int slavePort = Integer.parseInt((String)incomingMessagePayload);
+//                    int slavePort = Integer.parseInt(incomingMessagePayload);
+                    // connnectionMap
+                    Node node = new Node(nodeId, false, socket );
+                    connectionMap.put(nodeId, node);
+                    System.out.println("connectionMap RH: "+ connectionMap) ;
 
-                    Node node = new Node(slavePort, false, socket);
-                    connectionMap.put(slavePort, node);
-                    System.out.println("ConnectionMap Update: " + connectionMap);
+//                    Node node = new Node(slavePort, false, socket);
+//                    System.out.println("Clientport: " + node.getPortClient());
+//                    connectionMap.put(slavePort, node);
+//                    System.out.println("ConnectionMap Update: "+ connectionMap);
 
                     printIncomingMessage((String)incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
 
@@ -97,6 +105,15 @@ public class RequestHandler extends Thread {
                 case "rsa":
                     List<String> list = new ArrayList<String>((Collection<String>)incomingMessagePayload);
                     master.delegateRSA(Integer.parseInt(list.get(0)), list.get(1), list.get(2));
+                case "leave":
+                    slavePort = Integer.parseInt(incomingMessagePayload);
+
+                    connectionMap.remove(slavePort);
+                    System.out.println("ConnectionMap Update: "+ connectionMap);
+
+                    printClientMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
+                    connectionOpen = false;
+
                 default:
                     break;
             }

@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,8 +44,6 @@ public class Client {
         objectInputStream = new ObjectInputStream(socket.getInputStream());
         this.messageSender = "Client, " + socket.getLocalPort();
 
-        System.out.println(socket.getLocalPort());
-        System.out.println(socket.getPort());
 //        sendConnectMessage();
     }
 
