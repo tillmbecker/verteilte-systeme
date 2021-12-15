@@ -4,9 +4,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.Instant;
-import java.util.Map;
+import java.util.*;
 
 public class RequestHandler extends Thread {
+    private Master master;
     final private Socket socket;
     final private ObjectInputStream objectInputStream;
     final private ObjectOutputStream objectOutputStream;
@@ -14,7 +15,8 @@ public class RequestHandler extends Thread {
     private String messageSender;
     private Map<Integer,Node> connectionMap;
 
-    public RequestHandler(Socket socket, ObjectInputStream objectInputStream, ObjectOutputStream objectOutputStream, Map<Integer,Node> connectionMap) {
+    public RequestHandler(Master master, Socket socket, ObjectInputStream objectInputStream, ObjectOutputStream objectOutputStream, Map<Integer,Node> connectionMap) {
+        this.master = master;
         this.socket = socket;
         this.objectInputStream = objectInputStream;
         this.objectOutputStream = objectOutputStream;
@@ -39,7 +41,7 @@ public class RequestHandler extends Thread {
 
             // Extract message meta information
             String incomingMessageType = incomingMessage.getType();
-            String incomingMessagePayload = (String) incomingMessage.getPayload();
+            Object incomingMessagePayload = incomingMessage.getPayload();
             if (incomingMessagePayload == null) incomingMessagePayload = "";
             int incomingMessageSequenceNumber = incomingMessage.getSequenceNo();
 
@@ -51,17 +53,17 @@ public class RequestHandler extends Thread {
             switch (incomingMessageType) {
                 case "join":
                     // connnectionMap
-                    int slavePort = Integer.parseInt(incomingMessagePayload);
+                    int slavePort = Integer.parseInt((String)incomingMessagePayload);
 
                     Node node = new Node(slavePort, false, socket);
                     connectionMap.put(slavePort, node);
                     System.out.println("ConnectionMap Update: " + connectionMap);
 
-                    printIncomingMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
+                    printIncomingMessage((String)incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
 
                     // Send a message confirmation
                     try {
-                        sendConnectionConfirmation(incomingMessagePayload, incomingMessageSequenceNumber);
+                        sendConnectionConfirmation((String)incomingMessagePayload, incomingMessageSequenceNumber);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -73,25 +75,28 @@ public class RequestHandler extends Thread {
 
                     // Send message confirmation
                     try {
-                        sendMessageConfirmation(incomingMessagePayload, incomingMessageSequenceNumber);
+                        sendMessageConfirmation((String)incomingMessagePayload, incomingMessageSequenceNumber);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
                     // Print message from client
-                    printIncomingMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
+                    printIncomingMessage((String)incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
                     break;
                 case "read":
                     try {
                         sendLastMessage();
 
                         // Print message from client
-                        printIncomingMessage(incomingMessagePayload, incomingMessage.getSequenceNo(), incomingMessageType);
+                        printIncomingMessage((String) incomingMessagePayload, incomingMessage.getSequenceNo(), incomingMessageType);
 
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                     break;
+                case "rsa":
+                    List<String> list = new ArrayList<String>((Collection<String>)incomingMessagePayload);
+                    master.delegateRSA(Integer.parseInt(list.get(0)), list.get(1), list.get(2));
                 default:
                     break;
             }
