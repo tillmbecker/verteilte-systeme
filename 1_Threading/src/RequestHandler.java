@@ -55,7 +55,7 @@ public class RequestHandler extends Thread {
 
                     Node node = new Node(slavePort, false, socket);
                     connectionMap.put(slavePort, node);
-                    System.out.println("ConnectionMap Update: "+ connectionMap);
+                    System.out.println("ConnectionMap Update: " + connectionMap);
 
                     printIncomingMessage(incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
 

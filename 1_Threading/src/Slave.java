@@ -14,7 +14,7 @@ public class Slave {
     private ObjectOutputStream masterObjectOutputStream;
     private ObjectInputStream masterObjectInputStream;
 
-    //  Variable declaration for slave
+    // Variable declaration for slave
     private int slavePort;
     private Socket socket;
     private String messageSender;
@@ -81,7 +81,6 @@ public class Slave {
     public void delegateConnections() throws IOException {
         Message clientMessage;
         Message masterMessage;
-
 
         while (clientConnectionOpen) {
             try {

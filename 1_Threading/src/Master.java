@@ -52,7 +52,7 @@ public class Master {
                 // Create ClientHandler thread and start it
                 Thread thread = new RequestHandler(socket, objectInputStream, objectOutputStream, connectionMap);
                 thread.start();
-            } catch (Exception e){
+            } catch (Exception e) {
                 socket.close();
                 e.printStackTrace();
             }

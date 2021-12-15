@@ -39,6 +39,8 @@ public class Client {
         objectInputStream = new ObjectInputStream(socket.getInputStream());
         this.messageSender = "Client, " + socket.getLocalPort();
 
+        System.out.println(socket.getLocalPort());
+        System.out.println(socket.getPort());
 //        sendConnectMessage();
     }
 
@@ -74,7 +76,7 @@ public class Client {
 //        TimeUnit.SECONDS.sleep(5);
 
 //        requestLastMessage();
-//        disconnect();
+        disconnect();
 //        closeServer();
 
 //        ToDo: Die Streams schließen bringt das Programm zum Absturz, obwohl der Server schon geschlossen wurde
