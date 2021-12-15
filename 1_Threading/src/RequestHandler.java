@@ -47,7 +47,16 @@ public class RequestHandler extends Thread {
             String incomingMessageSender = incomingMessage.getSender();
             String[] incomingMessageSenderArr = incomingMessageSender.split(" ");
 
-            int nodeId = connectionMap.size();
+            // find highest key
+            int nodeId = 0;
+            for (int entry : connectionMap.keySet()) {
+                if (nodeId == 0 || entry > nodeId)
+                {
+                    nodeId = entry;
+                }
+            }
+            nodeId += 1;
+
 
             // Work on message request
             switch (incomingMessageType) {
