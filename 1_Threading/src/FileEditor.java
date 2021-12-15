@@ -1,6 +1,8 @@
 import java.io.*;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner; // Import the Scanner class to read text files
 import java.time.Instant; // Timestamps
 
@@ -8,7 +10,7 @@ public class FileEditor {
 
     public FileEditor() {}
 
-        public File createFile(String fileTitle) {
+    public File createFile(String fileTitle) {
         return new File(fileTitle);
     }
 
@@ -25,20 +27,21 @@ public class FileEditor {
         }
     }
 
-    public void readFile(File file) {
+    public List<String> readFile(File file) {
+        List<String> fileContent = new ArrayList<String>();
+        Scanner myReader = null;
         try {
-            Scanner myReader = new Scanner(file);
-            System.out.println("-Output--------");
-            while (myReader.hasNextLine()) {
-                String text = myReader.nextLine();
-                System.out.println(text);
-            }
-            System.out.println("---------------");
-            myReader.close();
+            myReader = new Scanner(file);
         } catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
             e.printStackTrace();
         }
+        while (myReader.hasNextLine()) {
+            String text = myReader.nextLine();
+            fileContent.add(text);
+//            System.out.println(text);
+        }
+            myReader.close();
+            return fileContent;
     }
 
     public String readLastLine (String fileName) {
