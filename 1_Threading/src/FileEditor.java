@@ -27,8 +27,8 @@ public class FileEditor {
         }
     }
 
-    public List<String> readFile(File file) {
-        List<String> fileContent = new ArrayList<String>();
+    public ArrayList<String> readFile(File file) {
+        ArrayList<String> fileContent = new ArrayList<String>();
         Scanner myReader = null;
         try {
             myReader = new Scanner(file);
