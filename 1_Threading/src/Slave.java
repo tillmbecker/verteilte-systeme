@@ -69,7 +69,7 @@ public class Slave {
     }
 
     public void createClientHandler() throws IOException {
-        clientHandler = new ClientHandler(this, masterObjectInputStream, masterObjectOutputStream, slavePort);
+        clientHandler = new ClientHandler(this, slavePort);
         clientHandler.start();
     }
 
@@ -148,7 +148,7 @@ public class Slave {
             masterObjectInputStream.close();
             masterObjectOutputStream.close();
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 }

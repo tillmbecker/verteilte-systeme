@@ -12,7 +12,7 @@ public class RunnableClassMaster implements Runnable {
             master.start();
             master.delegateConnections();
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 }

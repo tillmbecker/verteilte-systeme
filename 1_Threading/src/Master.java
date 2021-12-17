@@ -58,7 +58,7 @@ public class Master {
                 requestHandlerList.add(requestHandler);
             } catch (Exception e) {
                 socket.close();
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
     }
