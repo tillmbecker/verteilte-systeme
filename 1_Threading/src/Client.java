@@ -31,8 +31,6 @@ public class Client {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Client client = new Client("localhost", 9999);
         client.connect();
-        TimeUnit.SECONDS.sleep(1);
-//        client.sendMessages();
 
         client.createRSA(100);
         client.disconnect();
@@ -135,7 +133,8 @@ public class Client {
         objectOutputStream.writeObject(outgoingMessage);
         objectOutputStream.flush();
 
-        Message lastMessage = (Message) objectInputStream.readObject();
+        Message rsaMessage = (Message) objectInputStream.readObject();
+        System.out.println(rsaMessage.getPayload());
     }
 
     public void requestLastMessage() throws IOException, ClassNotFoundException {

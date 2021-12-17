@@ -93,17 +93,17 @@ public class Slave {
                     case "rsa-stop":
                         stopRSA();
                         break;
+                    case "rsa-success":
+                        masterMessage.setReceiver("Client");
+                        masterMessage.setSender(messageSender);
+                        clientHandler.forwardToClient(masterMessage);
                     case "response-client":
                         clientHandler.forwardToClient(masterMessage);
                         break;
                     default:
+                        clientHandler.forwardToClient(masterMessage);
                         break;
-
                 }
-                if (masterMessage.getType().equals("rsa-slave")) {
-
-                }
-
             } catch (ClassNotFoundException | InterruptedException classNotFoundException) {
                 classNotFoundException.printStackTrace();
             }
