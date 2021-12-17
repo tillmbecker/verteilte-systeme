@@ -22,17 +22,18 @@ public class Client {
     ObjectOutputStream objectOutputStream;
     ObjectInputStream objectInputStream;
     private String messageSender;
+    private int amountOfPrimes;
 
-    public Client(String host, int port) {
+    public Client(String host, int port, int amountOfPrimes) {
         this.host = host;
         this.port = port;
+        this.amountOfPrimes = amountOfPrimes;
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-        Client client = new Client("localhost", 9999);
+        Client client = new Client("localhost", 9999, 100);
         client.connect();
-
-        client.createRSA(100);
+        client.sendMessages();
         client.disconnect();
     }
 
@@ -44,8 +45,6 @@ public class Client {
         //read the server response message
         objectInputStream = new ObjectInputStream(socket.getInputStream());
         this.messageSender = "Client, " + socket.getLocalPort();
-
-//        sendConnectMessage();
     }
 
     public void printMasterMessages(String payload, int sequenceNumber, String type) {
@@ -76,16 +75,6 @@ public class Client {
             incomingMessage = (Message) objectInputStream.readObject();
             printMasterMessages(String.valueOf(incomingMessage.getPayload()), incomingMessage.getSequenceNo(), incomingMessage.getType());
         }
-
-
-//        requestLastMessage();
-//        TimeUnit.SECONDS.sleep(2);
-//        TimeUnit.SECONDS.sleep(20);
-
-//        disconnect();
-//        closeServer();
-
-//        ToDo: Die Streams schließen bringt das Programm zum Absturz, obwohl der Server schon geschlossen wurde
     }
 
     public void createRSA(int amountOfPrimes) throws IOException, ClassNotFoundException {

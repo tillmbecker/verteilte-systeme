@@ -14,7 +14,7 @@ public class Application {
         runner.start();
 
         for (int i = 0; i < numberOfSlaves; i++) {
-            runnableClassSlave = new RunnableClassSlave(startSlavePort+i, masterPort);
+            runnableClassSlave = new RunnableClassSlave(2, startSlavePort + i, "localhost", masterPort);
             runner = new Thread(runnableClassSlave);
             runner.start();
         }

@@ -10,22 +10,16 @@ import java.util.concurrent.TimeUnit;
 
 public class ClientHandler extends Thread {
     private Slave slave;
-    private int slavePort;
     private ServerSocket server;
     private Socket clientSocket;
     private ObjectInputStream clientObjectInputStream;
     private ObjectOutputStream clientObjectOutputStream;
-    private ObjectInputStream masterObjectInputStream;
-    private ObjectOutputStream masterObjectOutputStream;
 
     private boolean clientConnectionOpen;
     private String messageSender;
 
-    public ClientHandler(Slave slave, ObjectInputStream masterObjectInputStream, ObjectOutputStream masterObjectOutputStream, int slavePort) throws IOException {
+    public ClientHandler(Slave slave, int slavePort) throws IOException {
         this.slave = slave;
-        this.masterObjectInputStream = masterObjectInputStream;
-        this.masterObjectOutputStream = masterObjectOutputStream;
-        this.slavePort = slavePort;
         this.server = new ServerSocket(slavePort);
         messageSender = "Slave, " + server.getLocalPort();
     }
@@ -98,11 +92,16 @@ public class ClientHandler extends Thread {
     }
 
     public void forwardToClient(Message message) throws IOException, ClassNotFoundException {
-        // Read messages from master and send to client
-//        System.out.println(messageSender + " - Message received: " + message.getPayload());
+        try {
+            clientObjectOutputStream.writeObject(message);
+            clientObjectOutputStream.flush();
+        } catch (NullPointerException | SocketException e) {
+            // All Slaves will have to send the RSA result to their client, but not all Slaves have one.
+            // Try Catch prevents a resulting NullPointerException
 
-        clientObjectOutputStream.writeObject(message);
-        clientObjectOutputStream.flush();
+            // A second message can be sent if more than one Slave decrypted the message. By that time the Client has already disconnected
+            // Try Catch prevents a resulting SocketException
+        }
     }
 
     public void disconnectClientSlaveConnection() throws IOException {

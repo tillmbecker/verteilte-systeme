@@ -41,8 +41,7 @@ public class RequestHandler extends Thread {
                 System.out.println("Slave disconnected unexpectedly: " + socket);
                 break;
             } catch (IOException | ClassNotFoundException e) {
-                System.out.println("hello there");
-//                e.printStackTrace();
+                e.printStackTrace();
             }
 
             // Extract message meta information
@@ -63,8 +62,6 @@ public class RequestHandler extends Thread {
                     // connnectionMap
                     Node node = new Node(nodeId, false, socket);
                     connectionMap.put(nodeId, node);
-                    System.out.println("connectionMap RH: " + connectionMap);
-
 
                     printIncomingMessage((String) incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
                     // Send a message confirmation
@@ -143,6 +140,8 @@ public class RequestHandler extends Thread {
 
         try {
             objectOutputStream.writeObject(rsaMessage);
+        } catch (SocketException e) {
+            System.out.println("Socket exception");
         } catch (IOException e) {
             e.printStackTrace();
         }

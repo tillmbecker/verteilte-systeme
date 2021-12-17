@@ -5,17 +5,14 @@ public class RunnableClassClient implements Runnable {
     private int amountOfPrimes;
 
     public RunnableClassClient(String host, int port, int amountOfPrimes) {
-        client = new Client(host, port);
+        client = new Client(host, port, amountOfPrimes);
         this.amountOfPrimes = amountOfPrimes;
     }
 
     public void run() {
         try {
             client.connect();
-            client.sendMessages();
             client.createRSA(amountOfPrimes);
-
-//            client.requestLastMessage();
             client.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
