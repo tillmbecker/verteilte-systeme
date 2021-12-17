@@ -12,8 +12,8 @@ import java.util.List;
 
 /**
  * This class implements java socket client
- * @author tillmbecker
  *
+ * @author tillmbecker
  */
 public class Client {
     private String host;
@@ -31,8 +31,11 @@ public class Client {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Client client = new Client("localhost", 9999);
         client.connect();
-//        TimeUnit.SECONDS.sleep(5);
-        client.sendMessages();
+        TimeUnit.SECONDS.sleep(1);
+//        client.sendMessages();
+
+        client.createRSA(100);
+        client.disconnect();
     }
 
     public void connect() throws IOException, ClassNotFoundException {
@@ -48,15 +51,15 @@ public class Client {
     }
 
     public void printMasterMessages(String payload, int sequenceNumber, String type) {
-        System.out.println("---\n" + messageSender + " - Message received: " + "\n*Payload:\n" + payload +  "\n*Sequence Number: " + sequenceNumber + "\n*Type: " + type + "\n---");
+        System.out.println("---\n" + messageSender + " - Message received: " + "\n*Payload:\n" + payload + "\n*Sequence Number: " + sequenceNumber + "\n*Type: " + type + "\n---");
     }
 
     public void sendMessages() throws ClassNotFoundException, IOException, InterruptedException {
         Message incomingMessage;
 
-        for (int i=0; i<5;i++) {
+        for (int i = 0; i < 5; i++) {
             System.out.println(messageSender + ": Sending request to Socket Server");
-//          Outgoing message text
+            // Outgoing message text
             String messageText = "" + i;
             // Fill outgoingMessage with content
             Message outgoingMessage = new Message();
@@ -76,11 +79,12 @@ public class Client {
             printMasterMessages(String.valueOf(incomingMessage.getPayload()), incomingMessage.getSequenceNo(), incomingMessage.getType());
         }
 
-//        TimeUnit.SECONDS.sleep(5);
 
 //        requestLastMessage();
-        createRSA(100);
-        disconnect();
+//        TimeUnit.SECONDS.sleep(2);
+//        TimeUnit.SECONDS.sleep(20);
+
+//        disconnect();
 //        closeServer();
 
 //        ToDo: Die Streams schließen bringt das Programm zum Absturz, obwohl der Server schon geschlossen wurde
@@ -112,16 +116,6 @@ public class Client {
                 break;
         }
 
-        RSAHelper helper = new RSAHelper();
-
-//        for (String p: fileContents) {
-//            for (String q : fileContents) {
-//                if(helper.isValid(p,q,publicKey)) {
-//                    System.out.println("P/Q fit to the public key: "+helper.isValid(p,q,publicKey));
-//                    System.out.println("Decrypted text is: "+helper.decrypt(p,q,chiffre));
-//                }
-//            }
-//        }
 
         Message outgoingMessage = new Message();
 
