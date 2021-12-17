@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.time.Instant;
 import java.util.*;
 
@@ -35,8 +36,13 @@ public class RequestHandler extends Thread {
             // Convert ObjectInputStream object to Message
             try {
                 incomingMessage = (Message) objectInputStream.readObject();
+            } catch (SocketException e) {
+                connectionOpen = false;
+                System.out.println("Slave disconnected unexpectedly: " + socket);
+                break;
             } catch (IOException | ClassNotFoundException e) {
-                e.printStackTrace();
+                System.out.println("hello there");
+//                e.printStackTrace();
             }
 
             // Extract message meta information
@@ -55,20 +61,12 @@ public class RequestHandler extends Thread {
             switch (incomingMessageType) {
                 case "join":
                     // connnectionMap
-                    int slavePort = Integer.parseInt((String) incomingMessagePayload);
-//                    int slavePort = Integer.parseInt(incomingMessagePayload);
-                    // connnectionMap
                     Node node = new Node(nodeId, false, socket);
                     connectionMap.put(nodeId, node);
                     System.out.println("connectionMap RH: " + connectionMap);
 
-//                    Node node = new Node(slavePort, false, socket);
-//                    System.out.println("Clientport: " + node.getPortClient());
-//                    connectionMap.put(slavePort, node);
-//                    System.out.println("ConnectionMap Update: "+ connectionMap);
 
                     printIncomingMessage((String) incomingMessagePayload, incomingMessageSequenceNumber, incomingMessageType);
-
                     // Send a message confirmation
                     try {
                         sendConnectionConfirmation((String) incomingMessagePayload, incomingMessageSequenceNumber);
@@ -107,10 +105,11 @@ public class RequestHandler extends Thread {
                     master.delegateRSA(Integer.parseInt(list.get(0)), list.get(1), list.get(2));
                     break;
                 case "rsa-success":
+                    master.sendRSASuccessMessage(incomingMessage);
                     master.stopRSA();
                     break;
                 case "leave":
-                    slavePort = Integer.parseInt((String) incomingMessagePayload);
+                    int slavePort = Integer.parseInt((String) incomingMessagePayload);
 
                     connectionMap.remove(slavePort);
                     System.out.println("ConnectionMap Update: " + connectionMap);
@@ -121,7 +120,6 @@ public class RequestHandler extends Thread {
                 default:
                     break;
             }
-            // TODO: Add failsave for Socket Exception when slave disconnects
         }
 
         //Close resources
@@ -153,7 +151,22 @@ public class RequestHandler extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    public void sendRSASuccessMessage(Message message) {
+        message.setSender(messageSender);
+        message.setReceiver("Slave");
+
+        try {
+            objectOutputStream.writeObject(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            objectOutputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void stopRSA() {

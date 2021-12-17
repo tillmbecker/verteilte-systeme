@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +41,7 @@ public class ClientHandler extends Thread {
 
     public void waitForClientConnection() throws IOException {
         clientSocket = new Socket();
-        System.out.println(slave + ". " + slavePort + ": Waiting for client connection...");
+        System.out.println(messageSender + ": Waiting for client connection");
         while (clientConnectionOpen == false) {
             try {
                 clientSocket = server.accept();
@@ -69,6 +70,10 @@ public class ClientHandler extends Thread {
                 clientMessage = (Message) clientObjectInputStream.readObject();
                 slave.forwardToMaster(clientMessage);
 
+            } catch (SocketException e) {
+                System.out.println(messageSender + ": Client disconnected unexpectedly - " + clientSocket);
+                clientConnectionOpen = false;
+                waitForClientConnection();
             } catch (NullPointerException e) {
                 e.printStackTrace();
                 System.out.println(messageSender + ": Waiting for client message");
@@ -91,13 +96,15 @@ public class ClientHandler extends Thread {
         // Close resources
         disconnectClientSlaveConnection();
     }
-    public void forwardToClient (Message message) throws IOException, ClassNotFoundException {
+
+    public void forwardToClient(Message message) throws IOException, ClassNotFoundException {
         // Read messages from master and send to client
-        System.out.println(messageSender + " - Message received: " + message.getPayload());
+//        System.out.println(messageSender + " - Message received: " + message.getPayload());
 
         clientObjectOutputStream.writeObject(message);
         clientObjectOutputStream.flush();
     }
+
     public void disconnectClientSlaveConnection() throws IOException {
         clientObjectOutputStream.close();
         clientObjectInputStream.close();
