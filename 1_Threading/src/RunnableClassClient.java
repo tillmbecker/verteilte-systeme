@@ -1,16 +1,21 @@
 import java.io.IOException;
 
 public class RunnableClassClient implements Runnable {
-    Client client = new Client("localhost", 9001);
+    private Client client;
+    private int amountOfPrimes;
 
-    public RunnableClassClient() {
+    public RunnableClassClient(String host, int port, int amountOfPrimes) {
+        client = new Client(host, port);
+        this.amountOfPrimes = amountOfPrimes;
     }
 
     public void run() {
         try {
             client.connect();
             client.sendMessages();
-            client.requestLastMessage();
+            client.createRSA(amountOfPrimes);
+
+//            client.requestLastMessage();
             client.disconnect();
         } catch (Exception e) {
             e.printStackTrace();

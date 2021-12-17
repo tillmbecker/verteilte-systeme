@@ -1,9 +1,10 @@
 import java.io.IOException;
 
 public class RunnableClassMaster implements Runnable {
-    Master master = new Master(9876);
+    Master master;
 
-    public RunnableClassMaster() {
+    public RunnableClassMaster(int port) {
+        master = new Master(port);
     }
 
     public void run() {
