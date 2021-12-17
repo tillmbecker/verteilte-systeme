@@ -3,25 +3,26 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ClassNotFoundException;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 
 import java.time.Instant;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Master {
     private int port;
     Boolean connectionOpen;
     private ServerSocket server;
 
-    private Map<Integer,Node> connectionMap;
+    private ConcurrentHashMap<Integer, Node> connectionMap;
     private List<RequestHandler> requestHandlerList;
 
-    public Master (int port) {
+    public Master(int port) {
         this.port = port;
         connectionOpen = false;
-//        FIXME: ConcurrentHashMap scheint hierfür besser geeignet zu sein
-        connectionMap = Collections.synchronizedMap(new HashMap<Integer,Node>());
+        connectionMap = new ConcurrentHashMap<Integer, Node>();
         requestHandlerList = new ArrayList<RequestHandler>();
     }
 
@@ -51,10 +52,10 @@ public class Master {
                 ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
                 // Create ClientHandler thread and start it
-                Thread thread = new RequestHandler(this, socket, objectInputStream, objectOutputStream, connectionMap);
-                thread.start();
-                requestHandlerList.add((RequestHandler) thread);
-            } catch (Exception e){
+                RequestHandler requestHandler = new RequestHandler(this, socket, objectInputStream, objectOutputStream, connectionMap);
+                requestHandler.start();
+                requestHandlerList.add(requestHandler);
+            } catch (Exception e) {
                 socket.close();
                 e.printStackTrace();
             }
@@ -62,8 +63,6 @@ public class Master {
     }
 
     public void delegateRSA(int amountOfPrimes, String chiffre, String publicKey) {
-        System.out.println("delegating");
-
         FileEditor fileEditor = new FileEditor();
         File file = null;
 
@@ -84,8 +83,52 @@ public class Master {
                 System.out.println("Amount of primes not set correctly");
                 break;
         }
-        List<String> fileContents = fileEditor.readFile(file);
+        // Get primes list from file
+        ArrayList<String> primesList = fileEditor.readFile(file);
 
-        int numberOfSlaves = connectionMap.size();
+        // Get amount of primes
+        double fileContentsSize = primesList.size();
+        // Get amount of slaves
+        double numberOfSlaves = requestHandlerList.size();
+
+        // Calculate partition size
+        double partitionSizeDouble = (fileContentsSize / numberOfSlaves);
+        partitionSizeDouble = Math.ceil(partitionSizeDouble);
+        int partitionSize = (int) partitionSizeDouble;
+
+        int alternateIndex = partitionSize;
+        partitionSize++;
+
+        // New list stores RSAPayloads
+        ArrayList<RSAPayload> rsaPayloads = new ArrayList<>();
+
+        // Iterate over primesList
+        for (int i = 0; i < primesList.size(); i += partitionSize) {
+            // Fill RSAPayloads with content and their respective borders
+            if (alternateIndex < primesList.size()) {
+                rsaPayloads.add(new RSAPayload(chiffre, publicKey, i, alternateIndex, primesList));
+            } else {
+                rsaPayloads.add(new RSAPayload(chiffre, publicKey, i, primesList.size(), primesList));
+            }
+            alternateIndex += partitionSize;
+        }
+
+        for (RSAPayload payload: rsaPayloads) {
+            System.out.println(payload.getStartIndex());
+            System.out.println(payload.getEndIndex());
+        }
+
+        // Pass list elements to all Request Handlers
+        int index = 0;
+        for (RequestHandler handler : requestHandlerList) {
+            handler.sendRSARequest(rsaPayloads.get(index));
+            index++;
+        }
+    }
+
+    public void stopRSA() {
+        for (RequestHandler requestHandler: requestHandlerList) {
+            requestHandler.stopRSA();
+        }
     }
 }
