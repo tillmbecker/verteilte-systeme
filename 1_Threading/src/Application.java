@@ -1,33 +1,26 @@
 import java.io.IOException;
 
 public class Application {
-    public static void main(String [] args) throws InterruptedException, IOException {
+    public static void main(String[] args) {
+        int masterPort = 9000;
+        int startSlavePort = 8000;
+        int numberOfSlaves = 5;
+        int amountOfPrimes = 1000;
 
-        RunnableClassMaster runnableClassMaster = new RunnableClassMaster();
-        RunnableClassSlave runnableClassSlave = new RunnableClassSlave(9001);
-        RunnableClassSlave runnableClassSlave2 = new RunnableClassSlave(9002);
-        RunnableClassClient runnableClassClient = new RunnableClassClient();
-//        RunnableClassClient runnableClassClient2 = new RunnableClassClient();
-        Thread runner1 = new Thread(runnableClassMaster);
-        Thread runner2 = new Thread(runnableClassSlave);
-        Thread runner4 = new Thread(runnableClassSlave2);
-        Thread runner3 = new Thread(runnableClassClient);
-//        Thread runner4 = new Thread(runnableClassClient2);
-//        RunnableClassServer runnableObjectServer = new RunnableClassServer();
-//        RunnableClassClient runnableObjectClient = new RunnableClassClient();
-//        RunnableClassClient runnableObjectClient2 = new RunnableClassClient();
-//        RunnableClassClient runnableObjectClient3 = new RunnableClassClient();
-//        Thread runner1 = new Thread(runnableObjectServer);
-//        Thread runner2 = new Thread(runnableObjectClient);
-//        Thread runner3 = new Thread(runnableObjectClient2);
-//        Thread runner4 = new Thread(runnableObjectClient3);
-        runner1.start();
-        runner2.start();
-        runner3.start();
-        runner4.start();
-        runner1.join();
-        runner2.join();
-        runner3.join();
-        runner4.join();
+        RunnableClassMaster runnableClassMaster = new RunnableClassMaster(masterPort);
+        RunnableClassSlave runnableClassSlave;
+        Thread runner;
+        runner = new Thread(runnableClassMaster);
+        runner.start();
+
+        for (int i = 0; i < numberOfSlaves; i++) {
+            runnableClassSlave = new RunnableClassSlave(startSlavePort+i, masterPort);
+            runner = new Thread(runnableClassSlave);
+            runner.start();
+        }
+        RunnableClassClient runnableClassClient = new RunnableClassClient("localhost", startSlavePort, amountOfPrimes);
+        runner = new Thread(runnableClassClient);
+        runner.start();
+//        runner.join();
     }
 }
