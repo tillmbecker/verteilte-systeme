@@ -18,7 +18,6 @@ public class DecryptionHandler extends Thread {
     }
 
     public void bruteForceRSA(RSAPayload rsaPayload, String messageSender) throws IOException {
-
         String publicKey = rsaPayload.getPublicKey();
 
         String chiffre = rsaPayload.getChiffre();
@@ -29,7 +28,7 @@ public class DecryptionHandler extends Thread {
         boolean decrypted = false;
 
         for (String p : primesList) {
-            if (Thread.currentThread().isInterrupted()) break;
+            if (stopRSA) break;
             if (!decrypted) {
                 for (int i = startIndex; i < endIndex; i++) {
                     if (stopRSA) break;
@@ -39,7 +38,7 @@ public class DecryptionHandler extends Thread {
                         String decryptedCypher = helper.decrypt(p, q, chiffre);
                         System.out.println(messageSender + ": Decrypted text is: " + decryptedCypher);
 
-                        sendSuccessMessage(messageSender, decryptedCypher);
+                        sendSuccessMessage(messageSender, decryptedCypher, p, q);
                         decrypted = true;
                     }
                 }
@@ -52,11 +51,12 @@ public class DecryptionHandler extends Thread {
         }
     }
 
-    public void sendSuccessMessage(String messageSender, String decryptedCypher) throws IOException {
+    public void sendSuccessMessage(String messageSender, String decryptedCypher, String p, String q) throws IOException {
         Message outgoingMessage = new Message();
+        String messageText = "Decrypted cypher: " + decryptedCypher + "\nP: " + p + "\nQ: " + q;
         outgoingMessage.setReceiver("Master");
         outgoingMessage.setSender(messageSender);
-        outgoingMessage.setPayload(decryptedCypher);
+        outgoingMessage.setPayload(messageText);
         outgoingMessage.setType("rsa-success");
         outgoingMessage.setSequenceNo(0);
 

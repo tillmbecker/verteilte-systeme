@@ -35,6 +35,7 @@ public class Master {
     public void start() throws IOException {
         // Create the socket server object
         this.server = new ServerSocket(port);
+//        System.out.println("Some address " + server.getLocalSocketAddress());
         // Open the connection
         connectionOpen = true;
     }
@@ -62,6 +63,11 @@ public class Master {
         }
     }
 
+    public void sendRSASuccessMessage(Message message) {
+        for (RequestHandler requestHandler: requestHandlerList) {
+            requestHandler.sendRSASuccessMessage(message);
+        }
+    }
     public void delegateRSA(int amountOfPrimes, String chiffre, String publicKey) {
         FileEditor fileEditor = new FileEditor();
         File file = null;
@@ -111,11 +117,6 @@ public class Master {
                 rsaPayloads.add(new RSAPayload(chiffre, publicKey, i, primesList.size(), primesList));
             }
             alternateIndex += partitionSize;
-        }
-
-        for (RSAPayload payload: rsaPayloads) {
-            System.out.println(payload.getStartIndex());
-            System.out.println(payload.getEndIndex());
         }
 
         // Pass list elements to all Request Handlers
