@@ -33,11 +33,11 @@ public class Client {
     public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
         Client client = new Client("localhost", 9999, 100);
         client.connect();
-        client.sendMessages();
+        client.createRSA(client.amountOfPrimes);
         client.disconnect();
     }
 
-    public void connect() throws IOException, ClassNotFoundException {
+    public void connect() throws IOException {
         // Connect to server
         this.socket = new Socket(host, port);
         //write to socket using ObjectOutputStream
@@ -50,6 +50,7 @@ public class Client {
     public void printMasterMessages(String payload, int sequenceNumber, String type) {
         System.out.println("---\n" + messageSender + " - Message received: " + "\n*Payload:\n" + payload + "\n*Sequence Number: " + sequenceNumber + "\n*Type: " + type + "\n---");
     }
+
 
     public void sendMessages() throws ClassNotFoundException, IOException, InterruptedException {
         Message incomingMessage;

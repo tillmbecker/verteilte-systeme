@@ -1,4 +1,3 @@
-import java.io.IOException;
 
 public class Application {
     public static void main(String[] args) {
@@ -21,6 +20,5 @@ public class Application {
         RunnableClassClient runnableClassClient = new RunnableClassClient("localhost", startSlavePort, amountOfPrimes);
         runner = new Thread(runnableClassClient);
         runner.start();
-//        runner.join();
     }
 }
