@@ -1,14 +1,14 @@
 public class RunnableClassSlave implements Runnable {
 private Slave slave;
-    public RunnableClassSlave(int slavePort) {
-        slave = new Slave(slavePort, "localhost", 9876);
+    public RunnableClassSlave(int slavePort, int masterPort) {
+        slave = new Slave(slavePort, "localhost", masterPort);
     }
 
     public void run() {
         try {
-            slave.start();
             slave.connectToMaster();
-            slave.waitForClientConnection();
+            slave.createClientHandler();
+            slave.delegateConnections();
         } catch (Exception e) {
             e.printStackTrace();
         }
