@@ -20,8 +20,7 @@ public class RunnableClassSlave implements Runnable {
             slave.createClientHandler();
             slave.delegateConnections();
         } catch (Exception e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
-
     }
 }

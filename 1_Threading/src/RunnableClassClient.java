@@ -15,7 +15,7 @@ public class RunnableClassClient implements Runnable {
             client.createRSA(amountOfPrimes);
             client.disconnect();
         } catch (Exception e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 }

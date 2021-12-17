@@ -41,7 +41,7 @@ public class RequestHandler extends Thread {
                 System.out.println("Slave disconnected unexpectedly: " + socket);
                 break;
             } catch (IOException | ClassNotFoundException e) {
-//                e.printStackTrace();
+                e.printStackTrace();
             }
 
             // Extract message meta information
@@ -68,7 +68,7 @@ public class RequestHandler extends Thread {
                     try {
                         sendConnectionConfirmation((String) incomingMessagePayload, incomingMessageSequenceNumber);
                     } catch (IOException e) {
-//                        e.printStackTrace();
+                        e.printStackTrace();
                     }
 
                     break;
@@ -80,7 +80,7 @@ public class RequestHandler extends Thread {
                     try {
                         sendMessageConfirmation((String) incomingMessagePayload, incomingMessageSequenceNumber);
                     } catch (IOException e) {
-//                        e.printStackTrace();
+                        e.printStackTrace();
                     }
 
                     // Print message from client
@@ -94,7 +94,7 @@ public class RequestHandler extends Thread {
                         printIncomingMessage((String) incomingMessagePayload, incomingMessage.getSequenceNo(), incomingMessageType);
 
                     } catch (IOException e) {
-//                        e.printStackTrace();
+                        e.printStackTrace();
                     }
                     break;
                 case "rsa":
@@ -124,7 +124,7 @@ public class RequestHandler extends Thread {
             objectInputStream.close();
             objectOutputStream.close();
         } catch (IOException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -143,12 +143,12 @@ public class RequestHandler extends Thread {
         } catch (SocketException e) {
             System.out.println("Socket exception");
         } catch (IOException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
         try {
             objectOutputStream.flush();
         } catch (IOException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -159,12 +159,12 @@ public class RequestHandler extends Thread {
         try {
             objectOutputStream.writeObject(message);
         } catch (IOException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
         try {
             objectOutputStream.flush();
         } catch (IOException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -180,12 +180,12 @@ public class RequestHandler extends Thread {
         try {
             objectOutputStream.writeObject(rsaMessage);
         } catch (IOException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
         try {
             objectOutputStream.flush();
         } catch (IOException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
 
     }

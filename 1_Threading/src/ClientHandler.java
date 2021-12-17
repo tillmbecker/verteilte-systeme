@@ -29,7 +29,7 @@ public class ClientHandler extends Thread {
         try {
             waitForClientConnection();
         } catch (IOException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -47,7 +47,7 @@ public class ClientHandler extends Thread {
                 clientConnectionOpen = true;
             } catch (Exception e) {
                 clientSocket.close();
-//                e.printStackTrace();
+                e.printStackTrace();
             }
         }
 
@@ -69,10 +69,10 @@ public class ClientHandler extends Thread {
                 clientConnectionOpen = false;
                 waitForClientConnection();
             } catch (NullPointerException e) {
-//                e.printStackTrace();
+                e.printStackTrace();
                 System.out.println(messageSender + ": Waiting for client message");
             } catch (ClassNotFoundException e) {
-//                e.printStackTrace();
+                e.printStackTrace();
             } catch (EOFException e) {
                 System.out.println(messageSender + ": Disconnecting " + clientSocket);
                 disconnectClientSlaveConnection();
@@ -84,7 +84,7 @@ public class ClientHandler extends Thread {
 
                 // Wait for new client connection
                 waitForClientConnection();
-//                e.printStackTrace();
+                e.printStackTrace();
             }
         }
         // Close resources
