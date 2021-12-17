@@ -91,7 +91,6 @@ public class Slave {
                         createDecryptionHandler((RSAPayload) masterMessage.getPayload());
                         break;
                     case "rsa-stop":
-                        System.out.println("Stop the thing");
                         stopRSA();
                         break;
                     case "response-client":
