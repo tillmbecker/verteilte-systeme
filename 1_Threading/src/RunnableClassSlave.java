@@ -10,7 +10,6 @@ public class RunnableClassSlave implements Runnable {
         this.masterHost = masterHost;
         this.masterPort = masterPort;
         this.amountOfSlaves = amountOfSlaves;
-
     }
 
     public void run() {
